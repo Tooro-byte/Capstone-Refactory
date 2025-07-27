@@ -1,0 +1,51 @@
+extends layout.pug
+
+block head
+  link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css")
+  style.
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+block content
+  h2 👨‍🌾Young For Chicks Verified Farmer's List
+  table
+    thead
+      tr
+        th Full Name
+        th Email
+        th Contact
+        th NIN Number
+        th Category
+        th Recommender Name
+        th Recommender NIN
+        th Delete
+        th Update
+    tbody
+      if users.length
+        each user in users
+          if user.role==="farmer"
+            tr
+              td #{user.name}
+              td #{user.email}
+              td #{user.phone}
+              td #{user.nin}
+              th #{user.role}
+              th #{user.recommenderName}
+              th #{user.recommenderNIN}
+              td
+                a.btn.btn-primary.btn-block(href="/updateuser/"+user._id) Update
+              td
+                form(method="POST" action="/deleteuser")
+                  input(type="hidden" name="id" value=user._id)
+                  button.btn.btn-danger.btn-block(type="submit") Delete
