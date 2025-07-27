@@ -1,0 +1,113 @@
+/* Center the form */
+.signup-container {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f3f3f3;
+  padding: 40px 20px;
+}
+
+/* Card with transparent style */
+.card {
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 2px solid purple;
+  border-radius: 12px;
+  padding: 40px 30px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+}
+
+/* Animated Title */
+.signup-title {
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 25px;
+  color: purple;
+  animation: fadeSlideIn 0.8s ease-in-out;
+}
+
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form group styling */
+.form-group {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+  background-color: #fff;
+}
+
+input:focus,
+select:focus {
+  border-color: purple;
+  outline: none;
+}
+
+/* Button */
+button.btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background-color: purple;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+button.btn:hover {
+  background-color: #5e2a84;
+}
+
+/* Text under form */
+.text-center {
+  text-align: center;
+}
+
+.text-sm {
+  font-size: 14px;
+}
+
+.text-gray-600 {
+  color: #666;
+}
+
+.mt-6 {
+  margin-top: 24px;
+}
+
+a.text-purple-600 {
+  color: purple;
+  text-decoration: none;
+}
+
+a.text-purple-600:hover {
+  color: #5e2a84;
+}

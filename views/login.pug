@@ -1,0 +1,65 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Young4Chicks - Login
+    //- link(rel="stylesheet", href="/Styles/common.css")
+    link(rel="stylesheet", href="/Styles/login.css")
+  body
+    //-  Navbar
+    header
+      .navbar
+        .container
+          .logo
+            img(src="/Images/Gemini_Generated_Image_oje925oje925oje9.png", alt="Chick Farm App Log")
+            h1 Young4Chicks
+          nav
+            ul
+              li
+                a.active(href="/") Home
+              li
+                a(href="/about") About Us
+              li
+                a(href="/products") Products
+              li
+                a.btn.primary(href="/login") Login
+              li
+                a.btn.secondary(href="/signup") Register
+
+    //- Main Content
+    main
+      .login-container
+        .card
+          h2.login-title Login to Your Account
+
+          form(action="/login", method="POST")
+            .form-group
+              label(for="email") Email
+              input#email(type="email", name="email", required)
+
+            .form-group
+              label(for="password") Password
+              input#password(type="password", name="password", required)
+
+            .form-group.remember
+              label
+                input(type="checkbox", name="remember")
+                | Remember Me
+
+            button.btn(type="submit") Log In
+
+          .divider OR
+
+          .social-login
+            a.google-login(href="/auth/google")
+              img(src="/Images/google-logo.png", alt="Google")
+              | Continue with Google
+
+            a.facebook-login(href="/auth/facebook")
+              img(src="/Images/facebook-logo.png", alt="Facebook")
+              | Continue with Facebook
+
+          .text-center.mt-4
+            | Don't have an account?
+            a(href="/signup") Sign Up

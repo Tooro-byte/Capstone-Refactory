@@ -1,0 +1,110 @@
+extends layout
+
+block content
+  .container.mt-4
+    //-Page Title
+    h2.text-center.mb-5 🐣 Chick Request Form
+    form#chickRequestForm(method="POST", action="/chickRequest")
+      .row.g-4
+        //-Left Column - Form Inputs (Farmer Type, Chick Type, Quantity, Unit Price, Date, Comments)
+        .col-md-8
+          //-Farmer Type
+          .mb-4
+            h5.mb-3 Farmer Type
+            .farmer-type-group
+              label.farmer-card(for="starterFarmer")
+                input#starterFarmer(type="radio", name="farmerType", value="starter", checked)
+                span.radio-custom
+                | Starter Farmer
+                br
+                small.text-muted.d-block 1–100 chicks
+
+              label.farmer-card(for="returningFarmer")
+                input#returningFarmer(type="radio", name="farmerType", value="returning")
+                span.radio-custom
+                | Returning Farmer
+                br
+                small.text-muted.d-block 300–500 chicks
+
+          //-Chick Type
+          .mb-4
+            h5.mb-3 Chick Type
+            .farmer-type-group
+              label.farmer-card(for="broilerChick")
+                input#broilerChick(type="radio", name="chickType", value="broiler", checked)
+                span.radio-custom
+                | Broiler
+                br
+                small.text-muted.d-block Fast growing meat type
+
+              label.farmer-card(for="layerChick")
+                input#layerChick(type="radio", name="chickType", value="layer")
+                span.radio-custom
+                | Layer
+                br
+                small.text-muted.d-block Egg producing hen type
+
+          //-Quantity
+          .mb-4
+            label.form-label.fw-bold(for="numChicks") Number of Chicks
+            input#numChicks.form-control(type="number", name="numChicks", value="100", min="1", max="100", required)
+            small.text-muted Maximum:
+              span#maxChicks 100
+              |  chicks
+
+          //-Unit Price
+          .mb-4
+            label.form-label.fw-bold(for="unitPrice") Unit Price (UGX)
+            input#unitPrice.form-control(type="text", name="unitPrice", readonly)
+
+          //-Total Price (inside form)
+          .mb-4
+            label.form-label.fw-bold(for="totalPrice") Total Price (UGX)
+            input#totalPrice.form-control(type="text", name="totalPrice", readonly)
+            p#priceCalculation.text-muted.mb-0 --
+
+          //-Request Date
+          .mb-4
+            label.form-label.fw-bold(for="requestDateInput") Request Date
+            input#requestDateInput.form-control(type="date", name="requestDate", required)
+
+          //-Comments
+          .mb-4
+            label.form-label.fw-bold(for="comments") Comments
+            textarea#comments.form-control(name="comments", rows="3", required)
+
+          // Submit Button
+          button.btn.btn-primary.btn-lg.w-100.mb-4(type="submit") Submit Request
+
+      //-Standalone Order Summary (below the form)
+      .row.mt-5
+        .col-md-12
+          .card.bg-light
+            .card-body
+              h4.mb-4.text-center Order Summary
+              ul.list-unstyled.mb-0
+                li.mb-2
+                  strong Farmer Type:
+                  span#summaryFarmerType
+                li.mb-2
+                  strong Chick Type:
+                  span#summaryChickType
+                li.mb-2
+                  strong Quantity:
+                  span#summaryQuantity
+                li.mb-2
+                  strong Unit Price:
+                  span#summaryUnitPrice
+                li.mb-2
+                  strong Request Date:
+                  span#summaryDate
+                li.mb-2
+                  strong Comments:
+                  span#summaryComments
+                li.mt-3.pt-2.border-top
+                  strong Total:
+                  span#summaryTotal.fw-bold.text-success
+
+  //- Include CSS and JS
+  link(rel="stylesheet", href="/Styles/chick-requests.css")
+  script(src="/vanilla-js/chick-requests.js")

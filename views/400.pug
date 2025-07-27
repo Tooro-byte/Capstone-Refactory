@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  head 
+    head
+  link(rel="stylesheet", href="/Styles/400.css")
+  .error-container
+    .error-card
+      h1.error-code 400
+      h2.error-title Bad Request
+      p.error-message Oops! The request could not be understood or was missing required parameters.
+      p.error-message Page Not Found
+      a.btn(href="/") ⬅ Back to Home

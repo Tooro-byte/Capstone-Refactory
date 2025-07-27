@@ -1,0 +1,336 @@
+extends layout
+
+block content
+  .dashboard-wrapper
+    //- Sidebar
+    .sidebar
+      .sidebar-header
+        .logo-container
+          .logo-icon 🐥
+          .logo-text Young4Chicks 
+        .user-profile
+          .avatar
+            img(src="/images/default-avatar.png", alt="User Avatar")
+          .user-info
+            .user-name= user.name || 'Farmer'
+            .user-type= user.farmerType ? user.farmerType.charAt(0).toUpperCase() + user.farmerType.slice(1) + ' Farmer' : 'Farmer'
+            .user-status.online ● Online
+
+      .sidebar-nav
+        .nav-section
+          .section-title Dashboard
+          ul.nav-list
+            li.nav-item.active
+              a.nav-link(href="/farmerDashBoard")
+                .nav-icon 📊
+                span Overview
+            li.nav-item
+              a.nav-link(href="/profile")
+                .nav-icon 👤
+                span My Profile
+
+        .nav-section
+          .section-title Chick Requests
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/chickRequest")
+                .nav-icon ➕
+                span Create New Request
+                .badge.new NEW
+            li.nav-item
+              a.nav-link(href="/requests/track")
+                .nav-icon 🔍
+                span Track Request
+            li.nav-item
+              a.nav-link(href="/requests/approved")
+                .nav-icon ✅
+                span Approved Requests
+                if approvedRequests > 0
+                  .badge.count= approvedRequests
+            li.nav-item
+              a.nav-link(href="/requests/dispatched")
+                .nav-icon 🚚
+                span Dispatched Requests
+                if dispatchedRequests > 0
+                  .badge.count= dispatchedRequests
+            li.nav-item
+              a.nav-link(href="/requests/cancelled")
+                .nav-icon ❌
+                span Cancelled Requests
+                if cancelledRequests > 0
+                  .badge.count= cancelledRequests
+
+        .nav-section
+          .section-title Feed Management
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/feeds/request")
+                .nav-icon 🌾
+                span Request Feeds
+                .badge.highlight HOT
+            li.nav-item
+              a.nav-link(href="/feeds/history")
+                .nav-icon 📋
+                span Feed History
+
+        .nav-section
+          .section-title Support & Resources
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/farming-tips")
+                .nav-icon 💡
+                span Farming Tips
+            li.nav-item
+              a.nav-link(href="/community")
+                .nav-icon 👥
+                span Community Forum
+            li.nav-item
+              a.nav-link(href="/support")
+                .nav-icon 🆘
+                span Help & Support
+
+      .sidebar-footer
+        .weather-widget
+          .weather-icon ☀️
+          .weather-info
+            .temperature 28°C
+            .condition Sunny
+            .location Kampala, UG
+        .logout-btn
+          a(href="/logout")
+            .logout-icon 🚪
+            span Logout
+
+    //- Main Content
+    .main-content
+      //- Top Header
+      .top-header
+        .header-left
+          .breadcrumb
+            span Dashboard
+            .breadcrumb-separator /
+            span Overview
+          .page-title Welcome Back, #{user.name || 'Farmer'}! 👋
+          .page-subtitle Here's what's happening with your farming journey
+
+        .header-right
+          .header-actions
+            .notification-bell
+              .bell-icon 🔔
+              if pendingRequests > 0
+                .notification-count= pendingRequests
+            .search-box
+              input(type="text", placeholder="Search requests...")
+              .search-icon 🔍
+            .quick-actions
+              button.quick-btn.primary(onclick="window.location.href='/chickRequest'")
+                .btn-icon ➕
+                span New Request
+
+      //- Dashboard Content
+      .dashboard-content
+        //- Stats Cards
+        .stats-grid
+          .stat-card.primary
+            .stat-icon 🐣
+            .stat-content
+              .stat-number= chickSales.totalNumChicks || 0
+              .stat-label Total Chicks Received
+              .stat-trend 
+                if chickSales.totalNumChicks > 0
+                  | Active farming
+                else
+                  | Start your journey
+          .stat-card.success
+            .stat-icon ✅
+            .stat-content
+              .stat-number= approvedRequests || 0
+              .stat-label Approved Requests
+              .stat-trend 
+                if approvedRequests > 0
+                  | Ready for pickup
+                else
+                  | No approved requests
+          .stat-card.warning
+            .stat-icon ⏳
+            .stat-content
+              .stat-number= pendingRequests || 0
+              .stat-label Pending Requests
+              .stat-trend 
+                if pendingRequests > 0
+                  | Under review
+                else
+                  | No pending requests
+          .stat-card.info
+            .stat-icon 🌾
+            .stat-content
+              .stat-number 4
+              .stat-label Feed Bags Available
+              .stat-trend 2 months credit
+
+        //- Main Dashboard Sections
+        .dashboard-grid
+          //- Recent Requests
+          .dashboard-card.recent-requests
+            .card-header
+              .card-title
+                .title-icon 📋
+                span Recent Requests
+              .card-actions
+                a.view-all(href="/requests") View All
+            .card-content
+              .request-list
+                if requests && requests.length > 0
+                  each request in requests
+                    .request-item(class=request.status.toLowerCase())
+                      .request-info
+                        .request-id #REQ-#{request._id.toString().slice(-6).toUpperCase()}
+                        .request-details #{request.numChicks} #{request.chickType} Chicks
+                        .request-date= new Date(request.requestDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                      .request-status(class=request.status.toLowerCase())= request.status.charAt(0).toUpperCase() + request.status.slice(1)
+                else
+                  .request-item
+                    .request-info
+                      .request-details No requests found
+                      .request-date Start by creating your first request
+
+          //- Quick Actions
+          .dashboard-card.quick-actions-card
+            .card-header
+              .card-title
+                .title-icon ⚡
+                span Quick Actions
+            .card-content
+              .action-grid
+                .action-item
+                  .action-icon 🐣
+                  .action-title Request Chicks
+                  .action-desc Submit a new chick request
+                  button.action-btn(onclick="window.location.href='/chickRequest'") Start Request
+                .action-item
+                  .action-icon 🌾
+                  .action-title Order Feeds
+                  .action-desc Request feed bags
+                  button.action-btn(onclick="window.location.href='/feeds/request'") Order Now
+                .action-item
+                  .action-icon 📞
+                  .action-title Contact Support
+                  .action-desc Get help from our team
+                  button.action-btn(onclick="window.location.href='/support'") Contact Us
+
+          //- Farming Calendar
+          .dashboard-card.calendar-card
+            .card-header
+              .card-title
+                .title-icon 📅
+                span Farming Calendar
+            .card-content
+              .calendar-events
+                if requests && requests.length > 0
+                  each request in requests.slice(0, 3)
+                    if request.status === 'approved'
+                      .event-item.today
+                        .event-date
+                          .day= new Date(request.requestDate).getDate()
+                          .month= new Date(request.requestDate).toLocaleDateString('en-US', { month: 'short' })
+                        .event-info
+                          .event-title Chick Pickup Ready
+                          .event-time #{request.numChicks} #{request.chickType} chicks
+                          .event-location Main Office
+                    else if request.status === 'dispatched'
+                      .event-item.upcoming
+                        .event-date
+                          .day= new Date(request.requestDate).getDate()
+                          .month= new Date(request.requestDate).toLocaleDateString('en-US', { month: 'short' })
+                        .event-info
+                          .event-title Chicks Received
+                          .event-time #{request.numChicks} #{request.chickType} chicks
+                          .event-location Your Farm
+                else
+                  .event-item
+                    .event-info
+                      .event-title No upcoming events
+                      .event-desc Create a request to see your farming schedule
+
+          //- Performance Chart
+          .dashboard-card.chart-card
+            .card-header
+              .card-title
+                .title-icon 📈
+                span Farming Progress
+              .chart-period
+                select.period-select
+                  option Last 6 Months
+                  option Last Year
+            .card-content
+              .chart-container
+                .chart-placeholder
+                  - var months = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan']
+                  - var heights = ['60%', '80%', '45%', '90%', '70%', '95%']
+                  each height, index in heights
+                    .chart-bar(style=`height: ${height}`)
+                .chart-labels
+                  each month in months
+                    span= month
+
+          //- Request Summary
+          .dashboard-card.tips-card
+            .card-header
+              .card-title
+                .title-icon 📊
+                span Request Summary
+            .card-content
+              .tips-list
+                .tip-item
+                  .tip-icon ✅
+                  .tip-content
+                    .tip-title Approved Requests
+                    .tip-desc= `${approvedRequests} requests ready for pickup`
+                .tip-item
+                  .tip-icon ⏳
+                  .tip-content
+                    .tip-title Pending Requests
+                    .tip-desc= `${pendingRequests} requests under review`
+                .tip-item
+                  .tip-icon 🚚
+                  .tip-content
+                    .tip-title Dispatched Requests
+                    .tip-desc= `${dispatchedRequests} requests completed`
+
+          //-User Information
+          .dashboard-card.community-card
+            .card-header
+              .card-title
+                .title-icon 👤
+                span Farmer Profile
+            .card-content
+              .activity-list
+                .activity-item
+                  .activity-content
+                    .activity-text
+                      strong Name: 
+                      span= user.name || 'Not provided'
+                    .activity-time Registered farmer
+                .activity-item
+                  .activity-content
+                    .activity-text
+                      strong Type: 
+                      span= user.farmerType ? user.farmerType.charAt(0).toUpperCase() + user.farmerType.slice(1) + ' Farmer' : 'Not specified'
+                    .activity-time Farmer category
+                .activity-item
+                  .activity-content
+                    .activity-text
+                      strong Email: 
+                      span= user.email || 'Not provided'
+                    .activity-time Contact information
+                if user.phone
+                  .activity-item
+                    .activity-content
+                      .activity-text
+                        strong Phone: 
+                        span= user.phone
+                      .activity-time Contact number
+
+  //- Include JavaScript for interactivity
+  script(src="/js/dashboard.js")
+  link(rel="stylesheet", href="/Styles/farmerdash.css")

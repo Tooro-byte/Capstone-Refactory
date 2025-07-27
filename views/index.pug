@@ -1,0 +1,73 @@
+extends layout
+block content 
+    main
+      section.hero
+        .container
+          h2 Young For Chicks Says 'Welcome'
+          p
+            | Your dedicated platform for farmers and administrators to manage and
+            |   track main chick requests efficiently.
+          .hero-actions
+            a.btn.primary.large(href="/login") Login
+            a.btn.secondary.large(href="/signup") Create Account
+      //- -----Welcome Page cards with the description of the Apps services-----
+      //- -Card- one
+      section.features
+        .container
+          h3 Why Choose Young For Chicks?
+          .feature-grid
+            .feature-item
+              h4 Easy Request Submission
+              p
+                | Farmers can quickly submit new main chick requests with all
+                |   necessary details.
+            // -Card- Two
+            .feature-item
+              h4 Centralized Management
+              p
+                | Admins gain a comprehensive overview of all requests, statuses,
+                |   and farmer information.
+            // -Card-Three
+            .feature-item
+              h4 Streamlined Communication
+              p
+                | Facilitate smooth interactions between farmers and farm
+                |   administrators.
+            // -Card- Four
+            .feature-item
+              h4 Data at Your Fingertips
+              p
+                | Access and manage essential farm data for better
+                |   decision-making. Our Customer Service agents, well trained wil
+                |   help you acquire the necessary information you want and help you
+                |   form better decisions for your Farm.
+            // -Card-Five-------
+            .feature-item
+              h4 Be the First to Know
+              p
+                | At Young for Chicks, Our goal is to provide real time
+                |   information to our dear clients to keep them updated with the
+                |   current market, incubation alerts, vaccination alerts, and
+                |   critical alerts about the outbreak of farm diseases.
+            .feature-item
+              h4 Partner With Us
+              p
+                | Partnerships are a proven way of strengthening our ties with
+                |   you, if you would like to be recognized as one of our greatest
+                |   allies, please find download the partnership forms in your
+                |   dashboard, fill them and return them at our main office in
+                |   Kyadondo, Yusuf Lule Road, Hindo Plaza, Opposite Crane Bank.
+            // - End of Informative Cards-------
+    // The Start of Footer---
+    footer
+      .container
+        p © 2025 Young For Chicks Inc. All rights reserved.
+        .footer-links
+          a(href="#") Privacy Policy
+          a(href="#") Terms of Service
+          a(href="#") Daily Podcast
+          a(href="#") Subscribe
+    script(
+      defer="" 
+      src="js/main.js"
+      )

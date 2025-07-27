@@ -1,0 +1,329 @@
+/* Container & form base */
+.container {
+  max-width: 960px; /* Wider for better layout */
+  margin: auto;
+}
+
+/* --- Farmer Type & Chick Type Card Groups --- */
+.farmer-type-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* The clickable card for each radio */
+.farmer-card {
+  flex: 1 1 45%;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: #212529;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+/* Hide native radio input but keep accessible */
+.farmer-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+/* Custom radio circle */
+.radio-custom {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #6c757d;
+  border-radius: 50%;
+  background: white;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+/* The dot inside the custom radio when checked */
+.radio-custom::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: transparent;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: background-color 0.3s ease;
+}
+
+/* Checked state styles */
+.farmer-card input[type="radio"]:checked + .radio-custom {
+  border-color: #0d6efd;
+  background-color: #0d6efd;
+  box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+}
+
+.farmer-card input[type="radio"]:checked + .radio-custom::after {
+  background-color: white;
+}
+
+/* Highlight on hover */
+.farmer-card:hover {
+  background-color: #e7f1ff;
+  border-color: #0d6efd;
+  box-shadow: 0 0 10px rgba(13, 110, 253, 0.2);
+}
+
+/* Text content inside cards */
+.farmer-card > span,
+.farmer-card small {
+  pointer-events: none; /* So clicks go to input */
+}
+
+/* --- Number input fixes --- */
+input[type="number"] {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- Unit price readonly styling --- */
+input[readonly] {
+  background-color: #e9ecef !important;
+  font-weight: 600;
+  color: #212529;
+}
+
+/* --- Right column card and layout fixes --- */
+.col-md-5, .col-md-3, .col-md-4 {
+  min-width: 0;
+  /* Fix flexbox shrink issues */
+}
+
+/* Card body fill height */
+.card.h-100 {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card body scroll and spacing */
+.card.h-100 .card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* --- Total Price Styling --- */
+.text-center.mb-4 h2 {
+  font-weight: 600;
+  color: #198754; /* Bootstrap success green */
+}
+
+#totalPriceDisplay {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #198754;
+  margin: 0.2rem 0 0.4rem;
+}
+
+#priceCalculation {
+  font-style: italic;
+  color: #6c757d;
+}
+
+/* --- Submit button --- */
+button.btn.btn-primary.btn-lg.w-100.mb-4 {
+  margin-top: auto; /* Push button down */
+  font-weight: 600;
+  font-size: 1.2rem;
+  padding: 0.75rem;
+}
+
+/* --- Order Summary Card --- */
+.card.bg-light {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border-radius: 1rem;
+  border: 1px solid #ced4da;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-top: 1rem;
+  flex-grow: 0;
+  height: 100%;
+}
+
+.card.bg-light .card-body {
+  padding: 1rem 1.5rem;
+  overflow-y: auto;
+}
+
+.card.bg-light h5 {
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 0.75rem;
+}
+
+.card.bg-light ul.list-unstyled li {
+  padding: 0.35rem 0;
+  font-size: 1rem;
+  color: #495057;
+}
+
+.card.bg-light ul.list-unstyled li strong {
+  color: #343a40;
+}
+
+.card.bg-light ul.list-unstyled li span.text-success {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #198754;
+}
+
+.card.bg-light ul.list-unstyled li.mt-3.pt-2 {
+  border-top: 1px solid #ced4da;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+/* --- Request Date styling --- */
+#requestDate {
+  font-weight: 500;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+/* --- Responsive Fixes --- */
+@media (max-width: 767.98px) {
+  .farmer-type-group {
+    flex-direction: column;
+  }
+
+  .farmer-card {
+    flex: 1 1 100%;
+  }
+
+  /* Fix columns on small screens */
+  .col-md-5, .col-md-3, .col-md-4 {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* Larger total price on small */
+  #totalPriceDisplay {
+    font-size: 2.5rem;
+  }
+
+  .card.h-100 .card-body {
+    overflow-y: visible;
+  }
+}
+
+/* Limit height of right and middle column cards to avoid tall form */
+.col-md-3 > .card.h-100,
+.col-md-4 > .card.bg-light.h-100 {
+  max-height: 650px; /* adjust as needed */
+}
+
+/* Reduce vertical spacing in card headers and summary */
+.card-body h2,
+.card-body h5 {
+  margin-bottom: 0.5rem;
+}
+
+.card-body p,
+.card-body ul li {
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+}
+
+/* Compact order summary */
+.card.bg-light {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+/* Button spacing */
+button.btn.btn-primary.btn-lg {
+  margin-bottom: 1rem;
+}
+
+/* Reduce extra margin for summary items */
+.card.bg-light ul.list-unstyled li {
+  padding: 0.25rem 0;
+}
+
+/* Ensure scroll nicely on small viewport */
+@media (max-width: 767.98px) {
+  .col-md-3 > .card.h-100,
+  .col-md-4 > .card.bg-light.h-100 {
+    max-height: none;
+    overflow: visible;
+  }
+}
+/* --- New Fields: Request Date and Comments --- */
+#requestDateInput {
+  font-weight: 500;
+  color: #212529;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+#requestDateInput:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  outline: none;
+}
+
+#comments {
+  resize: vertical;
+  min-height: 100px;
+  font-weight: 400;
+  color: #212529;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+#comments:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  outline: none;
+}
+
+/* --- Main Title Styling --- */
+.page-title {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #0d6efd;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+/* --- Main Page Title: "Your Chick Request Form" --- */
+h2.text-center.mb-5 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0d6efd;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
