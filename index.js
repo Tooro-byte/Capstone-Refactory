@@ -19,7 +19,9 @@ const User = require("./models/User");
 const indexRoute = require("./routes/indexRoute");
 const signupRoute = require("./routes/authRoutes");
 const chicksRoute = require("./routes/chicksRoutes")
-const farmersRoute = require("./routes/farmersRoutes")
+const farmersRoute = require("./routes/farmersRoutes");
+const managerRoute = require("./routes/managersRoutes");
+
 
 // 2: Young for Chicks Instantiations
 const app = express();
@@ -68,6 +70,7 @@ app.use("/", indexRoute);
 app.use("/", signupRoute);
 app.use('/', chicksRoute);
 app.use('/', farmersRoute);
+app.use('/', managerRoute);
 
 //Handling Non -existing routes.
 app.use((req, res) => {

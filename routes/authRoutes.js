@@ -39,9 +39,9 @@ router.post(
     if (req.user.role == "farmer") {
       res.redirect("/farmerDashBoard");
     } else if (req.user.role == "salesRep") {
-      res.send("This is the Sale Rep dash board");
+      res.redirect("/");
     } else if (req.user.role == "brooderManager") {
-      res.send("This is the Brooder Manager dash board");
+      res.redirect("/managersBoard")
     } else {
       res.send("You do not have a role in the System");
     }

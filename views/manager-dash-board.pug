@@ -1,0 +1,263 @@
+extends layout
+
+block content
+  .dashboard-wrapper
+    //- Sidebar
+    .sidebar
+      .sidebar-header
+        .logo-container
+          .logo-icon 🐥
+          .logo-text Young4Chicks Manager
+        .user-profile
+          .avatar
+            img(src="/images/manager-avatar.png", alt="Manager Avatar")
+          .user-info
+            .user-name Manager
+            .user-type Brooder Manager
+            .user-status.online ● Online
+
+      .sidebar-nav
+        .nav-section
+          .section-title Dashboard
+          ul.nav-list
+            li.nav-item.active
+              a.nav-link(href="/managerDashboard")
+                .nav-icon 📊
+                span Overview
+            li.nav-item
+              a.nav-link(href="/manager/profile")
+                .nav-icon 👤
+                span My Profile
+
+        .nav-section
+          .section-title Stock Management
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/manager/stock")
+                .nav-icon 📦
+                span Chick Inventory
+                .badge.highlight LIVE
+            li.nav-item
+              a.nav-link(href="/manager/stock/add")
+                .nav-icon ➕
+                span Add New Stock
+            li.nav-item
+              a.nav-link(href="/manager/stock/update")
+                .nav-icon 🔄
+                span Update Stock
+            li.nav-item
+              a.nav-link(href="/manager/stock/history")
+                .nav-icon 📋
+                span Stock History
+
+        .nav-section
+          .section-title Request Management
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/manager/requests/pending")
+                .nav-icon ⏳
+                span Pending Requests
+            li.nav-item
+              a.nav-link(href="/manager/requests/approved")
+                .nav-icon ✅
+                span Approved Requests
+            li.nav-item
+              a.nav-link(href="/manager/requests/dispatched")
+                .nav-icon 🚚
+                span Dispatched Requests
+            li.nav-item
+              a.nav-link(href="/manager/requests/all")
+                .nav-icon 📊
+                span All Requests
+
+        .nav-section
+          .section-title Farmer Management
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/manager/farmers")
+                .nav-icon 👥
+                span Active Farmers
+            li.nav-item
+              a.nav-link(href="/manager/farmers/history")
+                .nav-icon 📈
+                span Farmer History
+            li.nav-item
+              a.nav-link(href="/manager/reports")
+                .nav-icon 📊
+                span Reports & Analytics
+
+        .nav-section
+          .section-title System
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/manager/settings")
+                .nav-icon ⚙️
+                span Settings
+            li.nav-item
+              a.nav-link(href="/manager/notifications")
+                .nav-icon 🔔
+                span Notifications
+
+      .sidebar-footer
+        .system-status
+          .status-indicator.online
+          .status-text System Online
+          .last-update Last updated: 2 min ago
+        .logout-btn
+          a(href="/logout")
+            .logout-icon 🚪
+            span Logout
+
+    //- Main Content
+    .main-content
+      .top-header
+        .header-left
+          .breadcrumb
+            span Manager Dashboard
+            .breadcrumb-separator /
+            span Overview
+          .page-title Welcome Back, Manager! 👋
+          .page-subtitle Manage your brooder operations efficiently
+
+        .header-right
+          .header-actions
+            .notification-bell
+              .bell-icon 🔔
+            .search-box
+              input(type="text", placeholder="Search farmers, requests...")
+              .search-icon 🔍
+            .quick-actions
+              a.quick-btn.primary(href="/manager/stock/add")
+                .btn-icon ➕
+                span Add Stock
+              a.quick-btn.secondary(href="/manager/requests/pending")
+                .btn-icon 📋
+                span Review Requests
+
+      .dashboard-content
+        .stats-grid
+          .stat-card.primary
+            .stat-icon 🐣
+            .stat-content
+              .stat-number 0
+              .stat-label Total Chicks in Stock
+              .stat-trend Low inventory - Restock needed
+          .stat-card.warning
+            .stat-icon ⏳
+            .stat-content
+              .stat-number 0
+              .stat-label Pending Requests
+              .stat-trend All caught up
+          .stat-card.success
+            .stat-icon ✅
+            .stat-content
+              .stat-number 0
+              .stat-label Approved Today
+              .stat-trend No approvals today
+          .stat-card.info
+            .stat-icon 👥
+            .stat-content
+              .stat-number 0
+              .stat-label Active Farmers
+              .stat-trend Growing community
+
+        .dashboard-grid
+          .dashboard-card.stock-overview
+            .card-header
+              .card-title
+                .title-icon 📦
+                span Current Stock Overview
+              .card-actions
+                a.btn-small(href="/manager/stock") Manage Stock
+            .card-content
+              .stock-grid
+                .stock-item
+                  .stock-info
+                    .stock-type No stock data available
+                    .stock-age Add stock to get started
+
+          .dashboard-card.pending-requests
+            .card-header
+              .card-title
+                .title-icon ⏳
+                span Pending Approval Requests
+              .card-actions
+                a.view-all(href="/manager/requests/pending") View All
+            .card-content
+              .request-item
+                .request-info
+                  .request-details No pending requests
+                  .request-date All requests processed
+
+          .dashboard-card.quick-actions-card
+            .card-header
+              .card-title
+                .title-icon ⚡
+                span Quick Actions
+            .card-content
+              .action-grid
+                .action-item
+                  .action-icon 📦
+                  .action-title Add New Stock
+                  .action-desc Record new chick arrivals
+                  a.action-btn(href="/manager/stock/add") Add Stock
+                .action-item
+                  .action-icon 🔄
+                  .action-title Update Stock
+                  .action-desc Modify existing inventory
+                  a.action-btn(href="/manager/stock/update") Update
+                .action-item
+                  .action-icon 📊
+                  .action-title Generate Report
+                  .action-desc Create inventory reports
+                  a.action-btn(href="/manager/reports") Generate
+
+          .dashboard-card.activities-card
+            .card-header
+              .card-title
+                .title-icon 📋
+                span Recent Activities
+            .card-content
+              .activity-item
+                .activity-content
+                  .activity-text No recent activities
+                  .activity-time Start managing to see activities
+
+          .dashboard-card.alerts-card
+            .card-header
+              .card-title
+                .title-icon ⚠️
+                span Stock Alerts
+            .card-content
+              .alert-item.info
+                .alert-icon ✅
+                .alert-content
+                  .alert-title All Good!
+                  .alert-desc No stock alerts at this time
+
+          .dashboard-card.chart-card
+            .card-header
+              .card-title
+                .title-icon 📈
+                span Monthly Performance
+              .chart-period
+                select.period-select
+                  option Last 6 Months
+                  option Last Year
+            .card-content
+              .chart-container
+                .chart-placeholder Chart data here...
+                .chart-labels
+                  span Aug
+                  span Sep
+                  span Oct
+                  span Nov
+                  span Dec
+                  span Jan
+                .chart-legend
+                  .legend-item
+                    .legend-color.approvals
+                    span Approvals
+
+block append head
+  link(rel="stylesheet", href="/Styles/manager-dashboard.css")
