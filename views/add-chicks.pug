@@ -1,0 +1,62 @@
+extends layout
+
+block content
+  nav.navbar.navbar-expand-lg.navbar-light.bg-light
+    .container-fluid
+      a.navbar-brand(href='#')
+      button.navbar-toggler(type='button', data-bs-toggle='collapse', data-bs-target='#navbarContent')
+        span.navbar-toggler-icon
+      #navbarContent.collapse.navbar-collapse
+        ul.navbar-nav.ms-auto
+          li.nav-item
+            a.nav-link(href='/logout') Logout
+
+  .container.mt-5
+    h1.mb-4 Add New Chicks To Stock 🐤
+
+    form(method='POST', action='/addchicks')
+      .mb-3
+        label(for='category') Category
+        select.form-select(name='category')
+          option(value='') -- Select Category --
+          option(value='local') Local
+          option(value='exotic') Exotic
+          option(value='mixed') Mixed Race
+
+      .mb-3
+        label(for='type') Chick Type
+        select.form-select(name='type')
+          option(value='') -- Select Type --
+          option(value='layer') Layer
+          option(value='broiler') Broiler
+
+      .mb-3
+        label(for='age') Age in Days
+        input.form-control(type='number', name='age', min='0', required)
+
+      .mb-3
+        label(for='number') Number of Chicks Added
+        input.form-control(type='number', name='number', min='1', required)
+
+      .mb-3
+        label(for='stock_date') Stock Date
+        input.form-control(type='date', name='stock_date', required)
+
+      .mb-3
+        label(for='comments') Comments
+        textarea.form-control(name='comments', rows='3')
+
+      .mb-3
+        label(for='staff_name') Staff Name
+        input.form-control(type='text', name='staff_name', required)
+
+      .mb-3
+        label(for='signature') Signature
+        input.form-control(type='text', name='signature', placeholder='e.g. John Doe', required)
+
+      .mb-3
+        label(for='phone') Phone Number
+        input.form-control(type='tel', name='phone', pattern='[0-9]{10,12}', required)
+
+      button.btn.btn-primary(type='submit') Submit Stock
+  link(rel='stylesheet' href='/styl/style.css')  

@@ -403,6 +403,8 @@
     position: relative;
     display: flex;
     align-items: center;
+    margin-bottom: 15px;
+    margin-top: 15px;
   }
   
   .search-box input {
