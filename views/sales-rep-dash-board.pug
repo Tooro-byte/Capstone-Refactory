@@ -1,0 +1,426 @@
+extends layout
+
+block head
+  link(rel="stylesheet", href="/Styles/salesRep.css")
+
+block content
+  header.header
+    .header-container
+      .header-left
+        .logo-container
+          i.fas.fa-egg.logo-icon
+        .logo-text
+          h1 Young4Chicks
+          p Sales Representative Dashboard
+      
+      .header-right
+        .notification-bell
+          i.fas.fa-bell
+          span.notification-badge #{pendingCount || 0}
+        .user-profile
+          i.fas.fa-user
+          span #{user.name || 'Sales Rep'}
+        .logout-container
+          a.logout-btn(href="/logout")
+            i.fas.fa-sign-out-alt
+            span Logout
+
+  //- Main Container
+  main.main-container
+    // Navigation Tabs
+    .nav-tabs
+      button.tab-button.active(data-tab="overview")
+        i.fas.fa-chart-line
+        span Overview
+      button.tab-button(data-tab="requests")
+        i.fas.fa-clipboard-list
+        span Requests
+      button.tab-button(data-tab="customers")
+        i.fas.fa-users
+        span Customers
+      button.tab-button(data-tab="calls")
+        i.fas.fa-phone
+        span Call Log
+
+    //- Overview Tab Content
+    .tab-content.active#overview-tab
+      //- Stats Grid
+      .stats-grid
+        .stat-card
+          .stat-content
+            .stat-info
+              p.stat-title Total Requests
+              p.stat-value #{totalRequests || 0}
+              p.stat-subtitle This month
+            .stat-icon.blue
+              i.fas.fa-clipboard-list
+        
+        .stat-card
+          .stat-content
+            .stat-info
+              p.stat-title Pending Requests
+              p.stat-value #{pendingRequests || 0}
+              p.stat-subtitle Awaiting approval
+            .stat-icon.yellow
+              i.fas.fa-clock
+        
+        .stat-card
+          .stat-content
+            .stat-info
+              p.stat-title Approved Today
+              p.stat-value #{approvedToday || 0}
+              p.stat-subtitle Ready for processing
+            .stat-icon.green
+              i.fas.fa-check-circle
+        
+        .stat-card
+          .stat-content
+            .stat-info
+              p.stat-title Ready for Pickup
+              p.stat-value #{dispatchedRequests || 0}
+              p.stat-subtitle Contact farmers
+            .stat-icon.purple
+              i.fas.fa-exclamation-circle
+        
+        .stat-card
+          .stat-content
+            .stat-info
+              p.stat-title Total Revenue
+              p.stat-value UGX #{totalRevenue ? totalRevenue.toLocaleString() : '0'}
+              p.stat-subtitle This month
+            .stat-icon.green
+              i.fas.fa-chart-line
+        
+        .stat-card
+          .stat-content
+            .stat-info
+              p.stat-title Avg. Response Time
+              p.stat-value #{avgResponseTime || 'N/A'}
+              p.stat-subtitle Call to approval
+            .stat-icon.blue
+              i.fas.fa-phone
+        
+        .stat-card
+          .stat-content
+            .stat-info
+              p.stat-title Total Stock
+              p.stat-value #{totalStock || 0}
+              p.stat-subtitle Chicks available
+            .stat-icon.orange
+              i.fas.fa-warehouse
+
+      //- Quick Actions
+      .quick-actions
+        h3 Quick Actions
+        .actions-grid
+          a.action-btn.green(href="/requests/new")
+            i.fas.fa-plus
+            span New Request
+          button.action-btn.blue(onclick="callFarmer()")
+            i.fas.fa-phone-alt
+            span Call Farmer
+          a.action-btn.purple(href="/reports")
+            i.fas.fa-eye
+            span View Reports
+          button.action-btn.orange(onclick="sendSMS()")
+            i.fas.fa-comment
+            span Send SMS
+
+    //- Requests Tab Content
+    .tab-content#requests-tab
+      //- Search and Filter
+      .search-filter
+        .search-container
+          i.fas.fa-search.search-icon
+          input.search-input(type="text", placeholder="Search farmers...", id="searchInput")
+        .filter-container
+          i.fas.fa-filter.filter-icon
+          select.filter-select(id="statusFilter")
+            option(value="all") All Status
+            option(value="Pending") Pending
+            option(value="approved") Approved
+            option(value="dispatched") Dispatched
+            option(value="canceled") Canceled
+
+      //- Requests List
+      .requests-list
+        if requests && requests.length > 0
+          each request in requests
+            .request-card(data-status=request.status.toLowerCase())
+              .request-header
+                .farmer-info
+                  //- Corrected line: Check if request.user exists before accessing its name
+                  h3.farmer-name #{request.user ? request.user.name : 'Unknown Farmer'}
+                  .badges
+                    span.status-badge(class=request.status.toLowerCase()) #{request.status}
+                    span.farmer-type-badge(class=request.farmerType) 
+                      | #{request.farmerType === 'starter' ? 'New Farmer' : 'Returning Farmer'}
+              
+              .request-details
+                .detail-grid
+                  .detail-item
+                    p.detail-label Request ID
+                    p.detail-value #{request._id.toString().slice(-6).toUpperCase()}
+                  .detail-item
+                    p.detail-label Chicks Requested
+                    p.detail-value #{request.numChicks} #{request.chickType}
+                  .detail-item
+                    p.detail-label Farmer Type
+                    p.detail-value #{request.farmerType}
+                  .detail-item
+                    p.detail-label Total Amount
+                    p.detail-value.amount UGX #{request.totalCost ? request.totalCost.toLocaleString() : (request.numChicks * 1650).toLocaleString()}
+                
+                .request-meta
+                  span.meta-item
+                    i.fas.fa-phone
+                    //- Corrected line
+                    | #{request.user ? request.user.phone : 'N/A'}
+                  span.meta-item
+                    i.fas.fa-calendar
+                    | #{new Date(request.requestDate).toLocaleDateString()}
+                  if request.approvedDate
+                    span.meta-item
+                      i.fas.fa-check
+                      | Approved: #{new Date(request.approvedDate).toLocaleDateString()}
+                  if request.user && request.user.recommenderName
+                    span.meta-item
+                      i.fas.fa-user-check
+                      | Rec: #{request.user.recommenderName}
+              
+              .request-actions
+                a.action-btn-small.blue(href=`/requests/${request._id}`)
+                  i.fas.fa-eye
+                  span View Details
+                //- Corrected line: Check if request.user exists before accessing its phone/name
+                button.action-btn-small.green(onclick=`callFarmer('${request.user ? request.user.phone : 'N/A'}', '${request.user ? request.user.name : 'Unknown'}')`)
+                  i.fas.fa-phone
+                  span Call
+                if request.status === 'Pending'
+                  button.action-btn-small.orange(onclick=`updateStatus('${request._id}', 'approved')`)
+                    i.fas.fa-check
+                    span Approve
+        else
+          .no-requests
+            i.fas.fa-clipboard-list.no-requests-icon
+            h3 No Requests Found
+            p No chick requests available at the moment.
+
+    //- Customers Tab Content
+    .tab-content#customers-tab
+      .customers-section
+        .section-header
+          h3 Registered Farmers
+          .customer-stats
+            .stat-item
+              span.stat-number #{totalCustomers || 0}
+              span.stat-label Total Farmers
+            .stat-item
+              span.stat-number #{starterFarmers || 0}
+              span.stat-label New Farmers
+            .stat-item
+              span.stat-number #{returningFarmers || 0}
+              span.stat-label Returning Farmers
+        
+        .customers-list
+          if customers && customers.length > 0
+            each customer in customers
+              .customer-card
+                .customer-info
+                  .customer-header
+                    h4.customer-name #{customer.name}
+                    span.customer-role #{customer.role}
+                  .customer-details
+                    p
+                      i.fas.fa-envelope
+                      | #{customer.email}
+                    p
+                      i.fas.fa-phone
+                      | #{customer.phone}
+                    p
+                      i.fas.fa-id-card
+                      | NIN: #{customer.nin}
+                    if customer.recommenderName
+                      p
+                        i.fas.fa-user-check
+                        | Recommender: #{customer.recommenderName}
+                .customer-actions
+                  button.action-btn-small.blue(onclick=`viewCustomer('${customer._id}')`)
+                    i.fas.fa-eye
+                    span View
+                  button.action-btn-small.green(onclick=`callFarmer('${customer.phone}', '${customer.name}')`)
+                    i.fas.fa-phone
+                    span Call
+          else
+            .no-customers
+              i.fas.fa-users.no-customers-icon
+              h3 No Customers Found
+              p No registered farmers available.
+
+    //- Call Log Tab Content
+    .tab-content#calls-tab
+      .call-log-section
+        .section-header
+          h3 Recent Calls
+          button.action-btn.green(onclick="logNewCall()")
+            i.fas.fa-plus
+            span Log Call
+        
+        .call-log-list
+          if callLogs && callLogs.length > 0
+            each call in callLogs
+              .call-log-item
+                .call-info
+                  .call-header
+                    h4.caller-name #{call.farmerName}
+                    span.call-status(class=call.status) #{call.status}
+                  .call-details
+                    p
+                      i.fas.fa-phone
+                      | #{call.phone}
+                    p
+                      i.fas.fa-clock
+                      | #{new Date(call.callDate).toLocaleString()}
+                    p
+                      i.fas.fa-comment
+                      | #{call.notes}
+                .call-actions
+                  button.action-btn-small.green(onclick=`callBack('${call.phone}')`)
+                    i.fas.fa-phone
+                    span Call Back
+          else
+            .no-calls
+              i.fas.fa-phone.no-calls-icon
+              h3 No Call Logs
+              p No recent calls recorded.
+
+  //- JavaScript for functionality
+  script.
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetTab = this.getAttribute('data-tab');
+          
+          //- Remove active class from all buttons and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          
+          //- Add active class to clicked button and corresponding content
+          this.classList.add('active');
+          document.getElementById(targetTab + '-tab').classList.add('active');
+        });
+      });
+
+      //- Search functionality
+      const searchInput = document.getElementById('searchInput');
+      const statusFilter = document.getElementById('statusFilter');
+      
+      if (searchInput) {
+        searchInput.addEventListener('input', filterRequests);
+      }
+      
+      if (statusFilter) {
+        statusFilter.addEventListener('change', filterRequests);
+      }
+
+      //- Add hover effects and animations
+      const cards = document.querySelectorAll('.stat-card, .request-card, .customer-card');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+    });
+
+    //- Filter requests function
+    function filterRequests() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const requestCards = document.querySelectorAll('.request-card');
+      
+      requestCards.forEach(card => {
+        const farmerName = card.querySelector('.farmer-name').textContent.toLowerCase();
+        const status = card.getAttribute('data-status');
+        
+        const matchesSearch = farmerName.includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || status === statusFilter.toLowerCase();
+        
+        if (matchesSearch && matchesStatus) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    //- Call farmer function
+    function callFarmer(phone, name) {
+      if (confirm(`Call ${name} at ${phone}?`)) {
+        //- Log the call attempt
+        fetch('/api/log-call', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: phone,
+            farmerName: name,
+            callDate: new Date(),
+            status: 'attempted'
+          })
+        });
+        
+        //- Open phone dialer (mobile) or show phone number
+        window.open(`tel:${phone}`);
+      }
+    }
+
+    //- Update request status
+    function updateStatus(requestId, newStatus) {
+      if (confirm(`Update request status to ${newStatus}?`)) {
+        fetch(`/api/requests/${requestId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Failed to update status');
+          }
+        });
+      }
+    }
+
+    //- Send SMS function
+    function sendSMS() {
+      alert('SMS functionality will be implemented with SMS gateway integration');
+    }
+
+    //- Log new call
+    function logNewCall() {
+      //- This would open a modal or redirect to a call logging form
+      window.location.href = '/calls/new';
+    }
+
+    //- View customer details
+    function viewCustomer(customerId) {
+      window.location.href = `/customers/${customerId}`;
+    }
+
+    //- Call back function
+    function callBack(phone) {
+      window.open(`tel:${phone}`);
+    }

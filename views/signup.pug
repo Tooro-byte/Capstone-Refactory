@@ -8,30 +8,30 @@ block content
       form(action="/signup" method="POST")
         .form-group
           label(for="name") Full Name
-          input#name(type="text", name="name", required)
+          input#name(type="text", name="name")
 
         .form-group
           label(for="email") Email
-          input#email(type="email", name="email", required)
+          input#email(type="email", name="email")
 
         .form-group
           label(for="password") Password
-          input#password(type="password", name="password", required)
+          input#password(type="password", name="password")
 
         .form-group
           label(for="phone") Phone Number
-          input#phone(type="tel", name="phone", required)
+          input#phone(type="tel", name="phone")
 
         .form-group
           label(for="nin") NIN Number
-          input#nin(type="text", name="nin", required)
+          input#nin(type="text", name="nin")
 
         .form-group
           label(for="role") Select Role
           select#role(name="role", required)
             option(value="" disabled selected) -- Select your role --
             option(value="farmer") Young Farmer
-            option(value="salesRep") Sales Representative
+            option(value="SalesRep") Sales Representative
             option(value="brooderManager") Brooder Manager
 
         .form-group

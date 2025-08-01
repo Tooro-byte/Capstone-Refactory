@@ -43,7 +43,7 @@ router.post(
     } else if (req.user.role == "brooderManager") {
       res.redirect("/managersBoard")
     } else {
-      res.send("You do not have a role in the System");
+      res.redirect("/sales-rep-board");
     }
   }
 );

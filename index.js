@@ -22,6 +22,7 @@ const chicksRoute = require("./routes/chicksRoutes")
 const farmersRoute = require("./routes/farmersRoutes");
 const managerRoute = require("./routes/managersRoutes");
 const stockRoutes = require('./routes/stockRoutes');
+const salesRepRoute = require('./routes/salesRepoRoutes');
 
 
 
@@ -75,6 +76,7 @@ app.use('/', chicksRoute);
 app.use('/', farmersRoute);
 app.use('/', managerRoute);
 app.use('/', stockRoutes);
+app.use("/", salesRepRoute);
 
 //Handling Non -existing routes.
 app.use((req, res) => {
