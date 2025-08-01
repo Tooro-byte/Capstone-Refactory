@@ -1,0 +1,58 @@
+extends layout.pug
+
+block append head
+  style.
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+block content
+  .container.mt-5
+    h2.mb-4 List Of Chick Stock Added Per Day
+
+    table.table.table-striped.table-hover
+      thead
+        tr
+          th Category
+          th Chick Type
+          th Age
+          th Num of Chicks Added
+          th Stock Date
+          th Comments
+          th Staff Name
+          th Signature
+          th Phone Number
+          th Update
+          th Delete
+      tbody
+        if chicks.length
+          each chick in chicks
+            tr
+              td #{chick.category}
+              td #{chick.type}
+              td #{chick.age}
+              td #{chick.number}
+              td #{moment(chick.stock_date).format("DD-MM-YYYY")}
+              td #{chick.comments}
+              td #{chick.staff_name}
+              td #{chick.signature}
+              td #{chick.phone}
+              td
+                a.btn.btn-primary(href="/updatechick/" + chick._id) Update
+              td
+                form(method="POST" action="/deletechick")
+                  input(type="hidden" name="id" value=chick._id)
+                  button.btn.btn-danger(type="submit") Delete
+        else
+          tr
+            td(colspan="11") No chick stock added yet.

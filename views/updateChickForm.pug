@@ -1,0 +1,71 @@
+extends layout
+
+block content
+  nav.navbar.navbar-expand-lg.navbar-light.bg-light
+    .container-fluid
+      a.navbar-brand(href='#')
+      button.navbar-toggler(type='button', data-bs-toggle='collapse', data-bs-target='#navbarContent')
+        span.navbar-toggler-icon
+      #navbarContent.collapse.navbar-collapse
+        ul.navbar-nav.ms-auto
+          li.nav-item
+            a.nav-link(href='/logout') Logout
+
+  .container.mt-5
+    //-Dynamic heading based on whether it's an Add or Update operation
+    h1.mb-4 #{chick ? 'Update Chick Stock' : 'Add New Chicks To Stock'} 🐤
+
+    //-Dynamic form action and hidden ID for update
+    form(method='POST', action=chick ? '/updatechick' : '/addchicks')
+      if chick
+        //-Hidden input for the ID, used in the POST /updatechick route
+        input(type='hidden', name='id', value=chick._id)
+
+      .mb-3
+        label(for='category') Category
+        select.form-select(name='category', required)
+          option(value='', selected=!chick || chick.category === '') -- Select Category --
+          option(value='local', selected=chick && chick.category === 'local') Local
+          option(value='exotic', selected=chick && chick.category === 'exotic') Exotic
+          option(value='mixed', selected=chick && chick.category === 'mixed') Mixed Race
+
+      .mb-3
+        label(for='type') Chick Type
+        select.form-select(name='type', required)
+          option(value='', selected=!chick || chick.type === '') -- Select Type --
+          option(value='layer', selected=chick && chick.type === 'layer') Layer
+          option(value='broiler', selected=chick && chick.type === 'broiler') Broiler
+
+      .mb-3
+        label(for='age') Age in Days
+        input.form-control(type='number', name='age', min='0', required, value=chick ? chick.age : '')
+
+      .mb-3
+        label(for='number') Number of Chicks Added
+        input.form-control(type='number', name='number', min='1', required, value=chick ? chick.number : '')
+
+      .mb-3
+        label(for='stock_date') Stock Date
+        // Format date for input type='date' (YYYY-MM-DD) using moment.js
+        input.form-control(type='date', name='stock_date', required, value=chick && chick.stock_date ? moment(chick.stock_date).format("YYYY-MM-DD") : '')
+
+      .mb-3
+        label(for='comments') Comments
+        textarea.form-control(name='comments', rows='3', required)= chick ? chick.comments : ''
+
+      .mb-3
+        label(for='staff_name') Staff Name
+        input.form-control(type='text', name='staff_name', required, value=chick ? chick.staff_name : '')
+
+      .mb-3
+        label(for='signature') Signature
+        input.form-control(type='text', name='signature', placeholder='e.g. John Doe', required, value=chick ? chick.signature : '')
+
+      .mb-3
+        label(for='phone') Phone Number
+        input.form-control(type='tel', name='phone', pattern='[0-9]{10,12}', required, value=chick ? chick.phone : '')
+
+      // Dynamic button text
+      button.btn.btn-primary(type='submit') #{chick ? 'Update Stock' : 'Submit Stock'}
+
+  link(rel='stylesheet' href='/Styles/add-chicks.css')

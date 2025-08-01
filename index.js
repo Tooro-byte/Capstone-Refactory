@@ -24,6 +24,8 @@ const managerRoute = require("./routes/managersRoutes");
 const stockRoutes = require('./routes/stockRoutes');
 
 
+
+const{error} = console;
 // 2: Young for Chicks Instantiations
 const app = express();
 const port = 3003;

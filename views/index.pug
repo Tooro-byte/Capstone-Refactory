@@ -1,73 +1,318 @@
-extends layout
+extends layout 
 block content 
-    main
-      section.hero
-        .container
-          h2 Young For Chicks Says 'Welcome'
-          p
-            | Your dedicated platform for farmers and administrators to manage and
-            |   track main chick requests efficiently.
-          .hero-actions
-            a.btn.primary.large(href="/login") Login
-            a.btn.secondary.large(href="/signup") Create Account
-      //- -----Welcome Page cards with the description of the Apps services-----
-      //- -Card- one
-      section.features
-        .container
-          h3 Why Choose Young For Chicks?
-          .feature-grid
-            .feature-item
-              h4 Easy Request Submission
-              p
-                | Farmers can quickly submit new main chick requests with all
-                |   necessary details.
-            // -Card- Two
-            .feature-item
-              h4 Centralized Management
-              p
-                | Admins gain a comprehensive overview of all requests, statuses,
-                |   and farmer information.
-            // -Card-Three
-            .feature-item
-              h4 Streamlined Communication
-              p
-                | Facilitate smooth interactions between farmers and farm
-                |   administrators.
-            // -Card- Four
-            .feature-item
-              h4 Data at Your Fingertips
-              p
-                | Access and manage essential farm data for better
-                |   decision-making. Our Customer Service agents, well trained wil
-                |   help you acquire the necessary information you want and help you
-                |   form better decisions for your Farm.
-            // -Card-Five-------
-            .feature-item
-              h4 Be the First to Know
-              p
-                | At Young for Chicks, Our goal is to provide real time
-                |   information to our dear clients to keep them updated with the
-                |   current market, incubation alerts, vaccination alerts, and
-                |   critical alerts about the outbreak of farm diseases.
-            .feature-item
-              h4 Partner With Us
-              p
-                | Partnerships are a proven way of strengthening our ties with
-                |   you, if you would like to be recognized as one of our greatest
-                |   allies, please find download the partnership forms in your
-                |   dashboard, fill them and return them at our main office in
-                |   Kyadondo, Yusuf Lule Road, Hindo Plaza, Opposite Crane Bank.
-            // - End of Informative Cards-------
-    // The Start of Footer---
-    footer
+  html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Young4Chicks - Urban Brooder Youth Empowerment Program
+    link(rel="stylesheet" href="/Styles/landing.css")
+    link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet")
+  
+  body
+    //-Hero Section
+    section.hero
+      .hero-container
+        .hero-content
+          .hero-badge
+            i.fas.fa-shield-alt
+            span Founded by Youth Member of Parliament Bukonzo West
+          h1.hero-title
+            | Empower Your Future with
+            span.hero-highlight Urban Poultry Farming
+          p.hero-description
+            | Join the youth revolution in urban agriculture. Get quality chicks, expert support, and the tools you need to build wealth through poultry farming. Designed specifically for youth aged 18-30.
+          .hero-buttons
+            a(href='/signup')
+              button.btn.btn-primary.btn-large
+                | Start Your Farm Today
+                i.fas.fa-arrow-right
+            a(href='/login')
+              button.btn.btn-outline.btn-large Login
+          
+          .hero-stats
+            .stat-card
+              .stat-number 500+
+              .stat-label Young Farmers Empowered
+            .stat-card
+              .stat-number UGx 1,650
+              .stat-label Fixed Price Per Chick
+            .stat-card
+              .stat-number 100%
+              .stat-label Quality Guarantee
+
+    //-About Section
+    section#about.about
       .container
-        p © 2025 Young For Chicks Inc. All rights reserved.
-        .footer-links
-          a(href="#") Privacy Policy
-          a(href="#") Terms of Service
-          a(href="#") Daily Podcast
-          a(href="#") Subscribe
-    script(
-      defer="" 
-      src="js/main.js"
-      )
+        .section-header
+          h2.section-title Transforming Youth Through Agriculture
+          p.section-description
+            | Our urban brooder program was founded by a youth Member of Parliament to facilitate young urban dwellers in wealth creation and economic participation.
+        
+        .about-content
+          .about-features
+            .feature
+              .feature-icon
+                i.fas.fa-users
+              .feature-content
+                h3.feature-title Youth-Focused Program
+                p.feature-description Specifically designed for young people aged 18-30 who want to start their poultry farming journey in urban areas.
+            
+            .feature
+              .feature-icon
+                i.fas.fa-feather-alt
+              .feature-content
+                h3.feature-title Quality Chicks
+                p.feature-description Access to both local and exotic chicks - layers and broilers - all at a fixed affordable price of UGx 1,650 per chick.
+            
+            .feature
+              .feature-icon
+                i.fas.fa-dollar-sign
+              .feature-content
+                h3.feature-title Complete Support
+                p.feature-description Each farmer receives 2 bags of quality feed, payable after 2 months, ensuring your chicks get the best start.
+          
+          .about-benefits
+            h3.benefits-title Program Benefits
+            ul.benefits-list
+              li
+                i.fas.fa-check-circle
+                span Starter farmers: Up to 100 chicks
+              li
+                i.fas.fa-check-circle
+                span Returning farmers: Up to 500 chicks
+              li
+                i.fas.fa-check-circle
+                span Fixed pricing - no hidden costs
+              li
+                i.fas.fa-check-circle
+                span Quality feed included
+              li
+                i.fas.fa-check-circle
+                span Expert guidance and support
+              li
+                i.fas.fa-check-circle
+                span Online request tracking
+
+    //-How It Works
+    section#how-it-works.how-it-works
+      .container
+        .section-header
+          h2.section-title How It Works
+          p.section-description Simple steps to start your poultry farming journey
+        
+        .steps
+          .step
+            .step-icon
+              i.fas.fa-user-check
+            h3.step-title 1. Register
+            p.step-description Register with your details and a recommender's NIN number. Only registered young farmers are eligible.
+          
+          .step
+            .step-icon
+              i.fas.fa-feather-alt
+            h3.step-title 2. Request Chicks
+            p.step-description Fill out a request form every 4 months specifying the number and type of chicks you need.
+          
+          .step
+            .step-icon
+              i.fas.fa-check-circle
+            h3.step-title 3. Get Approved
+            p.step-description Track your request online. Once approved by the Brooder Manager, you're ready to collect your chicks!
+        
+        .team-structure
+          h3.team-title Our Team Structure
+          .roles
+            .role
+              .role-icon
+                i.fas.fa-shield-alt
+              h4.role-title Brooder Manager
+              p.role-description Records chick stock, approves requests, and manages the entire operation to ensure quality service.
+            
+            .role
+              .role-icon
+                i.fas.fa-phone
+              h4.role-title Sales Representatives
+              p.role-description Three dedicated professionals who handle call-in requests and register completed sales.
+            
+            .role
+              .role-icon
+                i.fas.fa-users
+              h4.role-title Young Farmers
+              p.role-description Youth aged 18-30 who are registered and eligible to request chicks for their farming ventures.
+
+    //-Pricing
+    section#pricing.pricing
+      .container
+        .section-header
+          h2.section-title Simple, Fair Pricing
+          p.section-description Fixed pricing for all chicks - no surprises, no hidden fees
+        
+        .pricing-cards
+          .pricing-card.starter
+            h3.card-title Starter Farmers
+            .card-price
+              .price-amount UGx 1,650
+              .price-unit per chick
+            ul.card-features
+              li
+                i.fas.fa-check-circle
+                span Up to 100 chicks maximum
+              li
+                i.fas.fa-check-circle
+                span Choice of layers or broilers
+              li
+                i.fas.fa-check-circle
+                span Local and exotic varieties
+              li
+                i.fas.fa-check-circle
+                span 2 bags of quality feed included
+              li
+                i.fas.fa-check-circle
+                span Feed payable after 2 months
+              a(href='/signup')
+            button.btn.btn-primary.btn-full Get Started
+          
+          .pricing-card.returning
+            h3.card-title Returning Farmers
+            .card-price
+              .price-amount UGx 1,650
+              .price-unit per chick
+            ul.card-features
+              li
+                i.fas.fa-check-circle
+                span Up to 500 chicks maximum
+              li
+                i.fas.fa-check-circle
+                span Choice of layers or broilers
+              li
+                i.fas.fa-check-circle
+                span Local and exotic varieties
+              li
+                i.fas.fa-check-circle
+                span 2 bags of quality feed included
+              li
+                i.fas.fa-check-circle
+                span Feed payable after 2 months
+            button.btn.btn-secondary.btn-full Continue Farming
+        
+        .pricing-note
+          i.fas.fa-clock
+          span Requests accepted every 4 months
+
+    //-Testimonials
+    section.testimonials
+      .container
+        .section-header
+          h2.section-title Success Stories
+          p.section-description Hear from young farmers who transformed their lives
+        
+        .testimonial-cards
+          .testimonial-card
+            .stars
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+            p.testimonial-text "This program gave me the start I needed. From 100 chicks, I now have a thriving poultry business that supports my family."
+            .testimonial-author Sarah Ithungu, 25
+            .testimonial-location Karambi Sub-County
+            .testimonial-occupation Young Mother
+          
+          .testimonial-card
+            .stars
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+            p.testimonial-text "The quality of chicks and the support provided is exceptional. I've expanded to 300 chicks and planning for more."
+            .testimonial-author James Kabolibo, 28
+            .testimonial-location Nyakiyumbu Sub-County 
+            .testimonial-occupation S.2 Droup out
+          
+          .testimonial-card
+            .stars
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+            p.testimonial-text "The fixed pricing and feed support made it possible for me to start without huge capital. Highly recommend!"
+            .testimonial-author Biira Grace, 23
+            .testimonial-location Isango Sub-County
+            .testimonial-occupation PWD 
+          
+    //-Contact Section
+    section#contact.contact
+      .container
+        .section-header
+          h2.section-title Ready to Start Your Journey?
+          p.section-description Get in touch with our team and begin your poultry farming adventure
+        
+        .contact-info
+          .contact-item
+            .contact-icon
+              i.fas.fa-phone
+            h3.contact-title Call Us
+            p +256 700 123 456
+            p +256 750 987 654
+          
+          .contact-item
+            .contact-icon
+              i.fas.fa-envelope
+            h3.contact-title Email Us
+            p info@young4chicks.ac.ug
+            p support@young4chicks.ac.ug
+          
+          .contact-item
+            .contact-icon
+              i.fas.fa-map-marker-alt
+            h3.contact-title Visit Us
+            p Mukirania Street
+            p Kasese Municipality 
+            p Plot A301 Rwenzori Street
+        
+        .contact-cta
+          a(href="/signup")
+            button.btn.btn-light
+              | Register Now
+              i.fas.fa-arrow-right
+
+    //-Footer
+    footer.footer
+      .container
+        .footer-content
+          .footer-section
+            .footer-brand
+              i.fas.fa-feather
+              span Young4Chicks 
+            p.footer-description Empowering youth through urban poultry farming. Founded by youth, for youth.
+          
+          .footer-section
+            h3.footer-title Quick Links
+            ul.footer-links
+              li: a(href="#about") About Us
+              li: a(href="#how-it-works") How It Works
+              li: a(href="#pricing") Pricing
+              li: a(href="#contact") Contact
+          
+          .footer-section
+            h3.footer-title Services
+            ul.footer-links
+              li Layer Chicks
+              li Broiler Chicks
+              li Quality Feed
+              li Farming Support
+          
+          .footer-section
+            h3.footer-title Legal
+            ul.footer-links
+              li: a(href="#") Privacy Policy
+              li: a(href="#") Terms of Service
+              li: a(href="#") Eligibility Requirements
+        
+        .footer-bottom
+          p &copy; 2025 Young4Chicks Urban Brooder. All rights reserved. Founded by Youth Member of Parliament Bukonz west
+
+    //- script(src="/vanilla-js/landing.js")
