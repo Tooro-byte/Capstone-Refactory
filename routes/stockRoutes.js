@@ -15,7 +15,7 @@ router.post("/addchicks", async (req, res) => {
     console.log(req.body);
     const newChickStock = new addNewStock(req.body);
     await newChickStock.save();
-    res.redirect("/managersBoard");
+    res.redirect("/managerDashBoard"); 
   } catch (error) {
     console.error(error);
     res.status(400).render("400");
@@ -39,7 +39,7 @@ router.get("/updatechick/:id", async (req, res) => {
   try {
     const chickId = req.params.id;
     const updateChick = await displayChickStock.findOne({ _id: chickId });
-
+// If there no chick entry to Update
     if (!updateChick) {
       return res.status(404).send("Chick entry not found in the database for update.");
     }

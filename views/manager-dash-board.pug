@@ -12,7 +12,7 @@ block content
           .avatar
             img(src="/images/manager-avatar.png", alt="Manager Avatar")
           .user-info
-            .user-name Manager
+            .user-name= currentManager ? currentManager.name : 'Manager'
             .user-type Brooder Manager
             .user-status.online ● Online
 
@@ -116,7 +116,7 @@ block content
             span Manager Dashboard
             .breadcrumb-separator /
             span Overview
-          .page-title Welcome Back, Manager! 👋
+          .page-title= `Welcome Back, ${currentManager ? currentManager.name : 'Manager'}! 👋`
           .page-subtitle Manage your brooder operations efficiently
 
         .header-right
@@ -139,27 +139,33 @@ block content
           .stat-card.primary
             .stat-icon 🐣
             .stat-content
-              .stat-number 0
+              .stat-number= totalStock ? totalStock.totalChicks : 0
               .stat-label Total Chicks in Stock
-              .stat-trend Low inventory - Restock needed
+              .stat-trend= totalStock && totalStock.totalChicks > 100 ? "Good inventory level" : "Low inventory - Restock needed"
           .stat-card.warning
             .stat-icon ⏳
             .stat-content
-              .stat-number 0
+              .stat-number= pendingRequests
               .stat-label Pending Requests
-              .stat-trend All caught up
+              .stat-trend= pendingRequests > 0 ? `${pendingRequests} requests awaiting approval` : "All caught up"
           .stat-card.success
             .stat-icon ✅
             .stat-content
-              .stat-number 0
+              .stat-number= approvedRequests
               .stat-label Approved Today
-              .stat-trend No approvals today
+              .stat-trend= approvedRequests > 0 ? `${approvedRequests} approvals completed` : "No approvals today"
           .stat-card.info
             .stat-icon 👥
             .stat-content
-              .stat-number 0
+              .stat-number= totalNumOfFarmers
               .stat-label Active Farmers
-              .stat-trend Growing community
+              .stat-trend= totalNumOfFarmers > 10 ? "Growing community" : "Building farmer network"
+          .stat-card.revenue
+            .stat-icon 💰
+            .stat-content
+              .stat-number= chickSales ? `$${chickSales.totalChickSales || 0}` : "$0"
+              .stat-label Total Revenue
+              .stat-trend= chickSales && chickSales.totalChickSales > 0 ? `${chickSales.totalNumChicks || 0} chicks sold` : "Start earning today"
 
         .dashboard-grid
           .dashboard-card.stock-overview
@@ -171,10 +177,18 @@ block content
                 a.btn-small(href="/chickslist") Manage Stock
             .card-content
               .stock-grid
-                .stock-item
-                  .stock-info
-                    .stock-type No stock data available
-                    .stock-age Add stock to get started
+                if stock && stock.length > 0
+                  each item in stock
+                    .stock-item
+                      .stock-info
+                        .stock-type= `${item.category} - ${item.type}`
+                        .stock-age= `Age: ${item.age} days | Quantity: ${item.number}`
+                        .stock-date= `Added: ${item.stock_date ? new Date(item.stock_date).toLocaleDateString() : 'N/A'}`
+                else
+                  .stock-item
+                    .stock-info
+                      .stock-type No stock data available
+                      .stock-age Add stock to get started
 
           .dashboard-card.pending-requests
             .card-header
@@ -184,10 +198,19 @@ block content
               .card-actions
                 a.view-all(href="/manager/requests/pending") View All
             .card-content
-              .request-item
-                .request-info
-                  .request-details No pending requests
-                  .request-date All requests processed
+              if requests && requests.length > 0
+                each request in requests.slice(0, 5)
+                  if request.status === 'pending' || request.status === 'Pending'
+                    .request-item
+                      .request-info
+                        .request-details= `${request.user ? request.user.name : 'Unknown'} - ${request.numChicks} ${request.chickType} chicks`
+                        .request-date= `Requested: ${new Date(request.requestDate).toLocaleDateString()}`
+                        .request-cost= `Cost: $${request.totalCost || 0}`
+              else
+                .request-item
+                  .request-info
+                    .request-details No pending requests
+                    .request-date All requests processed
 
           .dashboard-card.quick-actions-card
             .card-header
@@ -218,10 +241,17 @@ block content
                 .title-icon 📋
                 span Recent Activities
             .card-content
-              .activity-item
-                .activity-content
-                  .activity-text No recent activities
-                  .activity-time Start managing to see activities
+              if requests && requests.length > 0
+                each request in requests.slice(0, 3)
+                  .activity-item
+                    .activity-content
+                      .activity-text= `${request.user ? request.user.name : 'Unknown'} requested ${request.numChicks} ${request.chickType} chicks - ${request.status}`
+                      .activity-time= new Date(request.requestDate).toLocaleDateString()
+              else
+                .activity-item
+                  .activity-content
+                    .activity-text No recent activities
+                    .activity-time Start managing to see activities
 
           .dashboard-card.alerts-card
             .card-header
@@ -229,11 +259,27 @@ block content
                 .title-icon ⚠️
                 span Stock Alerts
             .card-content
-              .alert-item.info
-                .alert-icon ✅
-                .alert-content
-                  .alert-title All Good!
-                  .alert-desc No stock alerts at this time
+              if stock && stock.length > 0
+                - var lowStockItems = stock.filter(item => item.number < 50)
+                if lowStockItems.length > 0
+                  each item in lowStockItems
+                    .alert-item.warning
+                      .alert-icon ⚠️
+                      .alert-content
+                        .alert-title Low Stock Alert
+                        .alert-desc= `${item.type} stock is low (${item.number} remaining)`
+                else
+                  .alert-item.info
+                    .alert-icon ✅
+                    .alert-content
+                      .alert-title All Good!
+                      .alert-desc No stock alerts at this time
+              else
+                .alert-item.warning
+                  .alert-icon ⚠️
+                  .alert-content
+                    .alert-title No Stock Data
+                    .alert-desc Please add stock to monitor levels
 
           .dashboard-card.chart-card
             .card-header
@@ -246,7 +292,16 @@ block content
                   option Last Year
             .card-content
               .chart-container
-                .chart-placeholder Chart data here...
+                .chart-stats
+                  .stat-item
+                    .stat-value= chickSales ? chickSales.totalNumChicks || 0 : 0
+                    .stat-label Total Chicks Sold
+                  .stat-item
+                    .stat-value= chickSales ? `$${chickSales.totalChickSales || 0}` : "$0"
+                    .stat-label Total Revenue
+                  .stat-item
+                    .stat-value= approvedRequests + dispatchedRequests
+                    .stat-label Completed Orders
                 .chart-labels
                   span Aug
                   span Sep
@@ -255,9 +310,10 @@ block content
                   span Dec
                   span Jan
                 .chart-legend
-                  .legend-item
+                  .legend-items
                     .legend-color.approvals
                     span Approvals
 
 block append head
   link(rel="stylesheet", href="/Styles/manager-dashboard.css")
+  //- script(src="/vanilla-js/manager-dashboard.js")

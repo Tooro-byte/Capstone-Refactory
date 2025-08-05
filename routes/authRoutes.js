@@ -41,7 +41,7 @@ router.post(
     } else if (req.user.role == "salesRep") {
       res.redirect("/");
     } else if (req.user.role == "brooderManager") {
-      res.redirect("/managersBoard")
+      res.redirect("/managerDashBoard")
     } else {
       res.redirect("/sales-rep-board");
     }
