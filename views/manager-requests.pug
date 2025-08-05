@@ -1,0 +1,267 @@
+extends layout
+
+block content
+  .dashboard-wrapper
+    //- Sidebar
+    .sidebar
+      .sidebar-header
+        .logo-container
+          .logo-icon 🐥
+          .logo-text Young4Chicks Manager
+        .user-profile
+          .avatar
+            img(src="/images/manager-avatar.png", alt="Manager Avatar")
+          .user-info
+            .user-name= currentManager ? currentManager.name : 'Manager'
+            .user-type Brooder Manager
+            .user-status.online ● Online
+
+      .sidebar-nav
+        .nav-section
+          .section-title Dashboard
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/managerDashBoard")
+                .nav-icon 📊
+                span Overview
+            li.nav-item
+              a.nav-link(href="/manager/profile")
+                .nav-icon 👤
+                span My Profile
+
+        .nav-section
+          .section-title Request Management
+          ul.nav-list
+            li.nav-item.active
+              a.nav-link(href="/requests")
+                .nav-icon ⏳
+                span All Requests
+                .badge.highlight= requests ? requests.length : 0
+            li.nav-item
+              a.nav-link(href="/manager/requests/approved")
+                .nav-icon ✅
+                span Approved Requests
+            li.nav-item
+              a.nav-link(href="/manager/requests/dispatched")
+                .nav-icon 🚚
+                span Dispatched Requests
+
+        .nav-section
+          .section-title Stock Management
+          ul.nav-list
+            li.nav-item
+              a.nav-link(href="/addchicks")
+                .nav-icon ➕
+                span Add New Stock
+            li.nav-item
+              a.nav-link(href="/chickslist")
+                .nav-icon 📋
+                span Stock History
+
+      .sidebar-footer
+        .system-status
+          .status-indicator.online
+          .status-text System Online
+          .last-update Last updated: now
+
+    //- Main Content
+    .main-content
+      .top-header
+        .header-left
+          .breadcrumb
+            span Manager Dashboard
+            .breadcrumb-separator /
+            span Request Management
+            .breadcrumb-separator /
+            span All Requests
+          .page-title Review Chick Requests
+          .page-subtitle Manage all farmer requests efficiently
+
+        .header-right
+          .header-actions
+            .search-box
+              input#searchRequests(type="text", placeholder="Search by farmer name, chick type...")
+              .search-icon 🔍
+            .filter-dropdown
+              select#statusFilter
+                option(value="all") All Status
+                option(value="pending") Pending
+                option(value="approved") Approved
+                option(value="dispatched") Dispatched
+                option(value="canceled") Canceled
+            .quick-actions
+              a.quick-btn.primary(href="/managerDashBoard")
+                .btn-icon 📊
+                span Dashboard
+              a.quick-btn.secondary(href="/addchicks")
+                .btn-icon ➕
+                span Add Stock
+
+      .dashboard-content
+        //- Summary Stats
+        .requests-summary
+          .summary-card.pending
+            .summary-icon ⏳
+            .summary-content
+              .summary-number= requests ? requests.filter(req => req.status === 'pending').length : 0
+              .summary-label Pending Requests
+          .summary-card.approved
+            .summary-icon ✅
+            .summary-content
+              .summary-number= requests ? requests.filter(req => req.status === 'approved').length : 0
+              .summary-label Approved Requests
+          .summary-card.dispatched
+            .summary-icon 🚚
+            .summary-content
+              .summary-number= requests ? requests.filter(req => req.status === 'dispatched').length : 0
+              .summary-label Dispatched Requests
+          .summary-card.canceled
+            .summary-icon ❌
+            .summary-content
+              .summary-number= requests ? requests.filter(req => req.status === 'canceled').length : 0
+              .summary-label Canceled Requests
+
+        //- Requests Table
+        .requests-container
+          .requests-header
+            .header-title
+              .title-icon 📋
+              span All Chick Requests
+              .total-count= `(${requests ? requests.length : 0} total)`
+            .header-actions
+              .bulk-actions
+                button.bulk-btn.approve-selected(disabled) Approve Selected
+                button.bulk-btn.reject-selected(disabled) Reject Selected
+              .view-options
+                button.view-btn.active(data-view="table") 📋 Table
+                button.view-btn(data-view="cards") 🗃️ Cards
+
+          .requests-table-container
+            if requests && requests.length > 0
+              table.requests-table
+                thead
+                  tr
+                    th
+                      input#selectAll(type="checkbox")
+                    th Farmer Details
+                    th Request Details
+                    th Chick Information
+                    th Financial Details
+                    th Request Date
+                    th Status
+                    th Actions
+                tbody#requestsTableBody
+                  each request in requests
+                    tr.request-row(data-request-id=request._id, data-status=request.status)
+                      td
+                        input.request-checkbox(type="checkbox", value=request._id)
+                      td.farmer-details
+                        .farmer-info
+                          .farmer-name= request.user ? request.user.name : 'Unknown Farmer'
+                          .farmer-email= request.user ? request.user.email : 'No email'
+                          .farmer-id= `ID: ${request.user ? request.user._id.toString().slice(-6) : 'N/A'}`
+                      td.request-details
+                        .request-id= `REQ-${request._id.toString().slice(-6)}`
+                        .request-priority
+                          if request.status === 'pending'
+                            .priority-badge.high High Priority
+                          else
+                            .priority-badge.normal Normal
+                      td.chick-info
+                        .chick-type= request.chickType
+                        .chick-quantity= `${request.numChicks} chicks`
+                        .chick-age= request.chickAge ? `Age: ${request.chickAge} days` : 'Age: Not specified'
+                      td.financial-details
+                        .total-cost= `$${request.totalCost || 0}`
+                        .unit-price= `$${request.unitPrice || 0}/chick`
+                        if request.discount
+                          .discount= `Discount: ${request.discount}%`
+                      td.request-date
+                        .date-requested= new Date(request.requestDate).toLocaleDateString()
+                        .time-requested= new Date(request.requestDate).toLocaleTimeString()
+                        .days-ago= `${Math.floor((Date.now() - new Date(request.requestDate)) / (1000 * 60 * 60 * 24))} days ago`
+                      td.status-cell
+                        .status-badge(class=request.status.toLowerCase())= request.status.toUpperCase()
+                        if request.approvedDate && request.status === 'approved'
+                          .status-date= `Approved: ${new Date(request.approvedDate).toLocaleDateString()}`
+                        if request.canceledDate && request.status === 'canceled'
+                          .status-date= `Canceled: ${new Date(request.canceledDate).toLocaleDateString()}`
+                          if request.rejectionReason
+                            .rejection-reason= `Reason: ${request.rejectionReason}`
+                      td.actions-cell
+                        .action-buttons
+                          if request.status === 'pending'
+                            button.btn-approve(data-request-id=request._id, data-farmer-name=request.user ? request.user.name : 'Unknown')
+                              .btn-icon ✅
+                              span Approve
+                            button.btn-reject(data-request-id=request._id, data-farmer-name=request.user ? request.user.name : 'Unknown')
+                              .btn-icon ❌
+                              span Reject
+                          else if request.status === 'approved'
+                            button.btn-dispatch(data-request-id=request._id)
+                              .btn-icon 🚚
+                              span Mark Dispatched
+                            button.btn-cancel(data-request-id=request._id)
+                              .btn-icon ❌
+                              span Cancel
+                          else if request.status === 'dispatched'
+                            .status-text ✅ Completed
+                          else if request.status === 'canceled'
+                            .status-text ❌ Canceled
+                          .action-menu
+                            button.menu-btn ⋮
+                            .menu-dropdown
+                              a.menu-item(href=`#`) View Details
+                              a.menu-item(href=`#`) Contact Farmer
+                              a.menu-item(href=`#`) Print Receipt
+            else
+              .empty-requests-state
+                .empty-icon 📋
+                .empty-title No Requests Found
+                .empty-subtitle No chick requests have been submitted yet
+                .empty-actions
+                  a.btn-primary(href="/managerDashBoard") Back to Dashboard
+
+          //- Cards View (Hidden by default)
+          .requests-cards-container(style="display: none;")
+            if requests && requests.length > 0
+              .cards-grid
+                each request in requests
+                  .request-card(data-request-id=request._id, data-status=request.status)
+                    .card-header
+                      .request-info
+                        .request-id= `REQ-${request._id.toString().slice(-6)}`
+                        .request-date= new Date(request.requestDate).toLocaleDateString()
+                      .status-badge(class=request.status.toLowerCase())= request.status.toUpperCase()
+                    .card-body
+                      .farmer-section
+                        .section-title Farmer Details
+                        .farmer-name= request.user ? request.user.name : 'Unknown Farmer'
+                        .farmer-email= request.user ? request.user.email : 'No email'
+                      .chick-section
+                        .section-title Chick Request
+                        .chick-details= `${request.numChicks} ${request.chickType} chicks`
+                        .chick-cost= `Total: $${request.totalCost || 0}`
+                    .card-footer
+                      if request.status === 'pending'
+                        .card-actions
+                          button.btn-approve.card-btn(data-request-id=request._id, data-farmer-name=request.user ? request.user.name : 'Unknown')
+                            span ✅ Approve
+                          button.btn-reject.card-btn(data-request-id=request._id, data-farmer-name=request.user ? request.user.name : 'Unknown')
+                            span ❌ Reject
+                      else
+                        .status-info= `Status: ${request.status}`
+
+        //- Pagination
+        .pagination-container
+          .pagination-info
+            span Showing 1-#{requests ? requests.length : 0} of #{requests ? requests.length : 0} requests
+          .pagination-controls
+            button.page-btn(disabled) ← Previous
+            .page-numbers
+              button.page-number.active 1
+            button.page-btn(disabled) Next →
+
+block append head
+  link(rel="stylesheet", href="/Styles/manager-requests.css")
+  script(src="/vanilla-js/manager-requests.js")

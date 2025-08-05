@@ -1,718 +1,826 @@
-// Dashboard JavaScript
-class DashboardManager {
+class ManagerDashboard {
     constructor() {
-        this.data = {
-            stats: {
-                totalStock: 0,
-                pendingRequests: 0,
-                approvedToday: 0,
-                activeFarmers: 0,
-                totalRevenue: 0
-            },
-            stock: [],
-            requests: [],
-            activities: []
-        };
-        
         this.init();
+        this.setupEventListeners();
+        this.startAutoRefresh();
     }
 
     init() {
-        this.initializeEventListeners();
-        this.loadDashboardData();
-        this.initializeLucideIcons();
+        console.log('Manager Dashboard initialized');
+        this.showNotification('Dashboard loaded successfully', 'success');
+        this.updateLastRefreshTime();
     }
 
-    initializeLucideIcons() {
-        // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    }
-
-    initializeEventListeners() {
-        // Navigation event listeners
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                this.handleNavigation(e, item);
-            });
-        });
-
-        // Search functionality
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.handleSearch(e.target.value);
-            });
-        }
-
-        // Quick action buttons
-        const quickBtns = document.querySelectorAll('.quick-btn');
-        quickBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.handleQuickAction(e);
-            });
-        });
-
-        // Action items
-        const actionItems = document.querySelectorAll('.action-item');
-        actionItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                this.handleActionClick(e, item);
-            });
-        });
-
-        // Logout button
-        const logoutBtn = document.querySelector('.logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                this.handleLogout();
-            });
-        }
-
-        // Notification button
-        const notificationBtn = document.querySelector('.notification-btn');
-        if (notificationBtn) {
-            notificationBtn.addEventListener('click', () => {
-                this.handleNotifications();
-            });
-        }
-
-        // Card actions
-        const cardActions = document.querySelectorAll('.card-action');
-        cardActions.forEach(action => {
-            action.addEventListener('click', (e) => {
-                this.handleCardAction(e);
-            });
-        });
-
-        // Request action buttons
+    setupEventListeners() {
+        // Handle approve buttons
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('action-btn')) {
-                this.handleRequestAction(e);
+            if (e.target.classList.contains('btn-approve') || e.target.closest('.btn-approve')) {
+                e.preventDefault();
+                const button = e.target.classList.contains('btn-approve') ? e.target : e.target.closest('.btn-approve');
+                this.handleApproveRequest(button);
             }
         });
-    }
 
-    async loadDashboardData() {
-        try {
-            // Simulate API call - replace with actual API endpoints
-            await this.fetchDashboardStats();
-            await this.fetchStockData();
-            await this.fetchRequestsData();
-            await this.fetchActivitiesData();
-            
-            this.updateUI();
-        } catch (error) {
-            console.error('Error loading dashboard data:', error);
-            this.showError('Failed to load dashboard data');
+        // Handle reject buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-reject') || e.target.closest('.btn-reject')) {
+                e.preventDefault();
+                const button = e.target.classList.contains('btn-reject') ? e.target : e.target.closest('.btn-reject');
+                this.handleRejectRequest(button);
+            }
+        });
+
+        // Handle manual refresh button
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.refreshDashboard();
+            });
+        }
+
+        // Handle search functionality
+        const searchInput = document.querySelector('.search-box input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterRequests(e.target.value);
+            });
         }
     }
 
-    async fetchDashboardStats() {
-        // Simulate API call - replace with actual endpoint
+    async handleApproveRequest(button) {
+        const requestId = this.extractRequestId(button.href);
+        if (!requestId) {
+            this.showNotification('Invalid request ID', 'error');
+            return;
+        }
+
+        // Show loading state
+        const originalText = button.textContent;
+        button.textContent = 'Approving...';
+        button.disabled = true;
+        button.classList.add('loading');
+
+        try {
+            const response = await fetch(`/api/requests/${requestId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.showNotification(data.message, 'success');
+                this.updateDashboardStats(data.updatedStats);
+                this.removeRequestFromUI(requestId);
+                this.animateStatsUpdate();
+                
+                // Update revenue with animation
+                this.animateRevenueUpdate(data.updatedStats.chickSales.totalChickSales);
+                
+                // Show success animation
+                this.showApprovalAnimation(data.approvedOrder);
+            } else {
+                this.showNotification(data.message, 'error');
+                // Restore button state
+                button.textContent = originalText;
+                button.disabled = false;
+                button.classList.remove('loading');
+            }
+        } catch (error) {
+            console.error('Error approving request:', error);
+            this.showNotification('Network error. Please try again.', 'error');
+            // Restore button state
+            button.textContent = originalText;
+            button.disabled = false;
+            button.classList.remove('loading');
+        }
+    }
+
+    async handleRejectRequest(button) {
+        const requestId = this.extractRequestId(button.href);
+        if (!requestId) {
+            this.showNotification('Invalid request ID', 'error');
+            return;
+        }
+
+        // Show rejection reason modal
+        const reason = await this.showRejectModal();
+        if (!reason) return; // User cancelled
+
+        // Show loading state
+        const originalText = button.textContent;
+        button.textContent = 'Rejecting...';
+        button.disabled = true;
+        button.classList.add('loading');
+
+        try {
+            const response = await fetch(`/api/requests/${requestId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ rejectionReason: reason })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.showNotification(data.message, 'success');
+                this.updateDashboardStats(data.updatedStats);
+                this.removeRequestFromUI(requestId);
+                this.animateStatsUpdate();
+            } else {
+                this.showNotification(data.message, 'error');
+                // Restore button state
+                button.textContent = originalText;
+                button.disabled = false;
+                button.classList.remove('loading');
+            }
+        } catch (error) {
+            console.error('Error rejecting request:', error);
+            this.showNotification('Network error. Please try again.', 'error');
+            // Restore button state
+            button.textContent = originalText;
+            button.disabled = false;
+            button.classList.remove('loading');
+        }
+    }
+
+    showRejectModal() {
         return new Promise((resolve) => {
+            // Create modal HTML
+            const modalHTML = `
+                <div class="reject-modal-overlay" id="rejectModal">
+                    <div class="reject-modal">
+                        <div class="modal-header">
+                            <h3>Reject Request</h3>
+                            <button class="modal-close" onclick="document.getElementById('rejectModal').remove(); resolve(null);">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <label for="rejectionReason">Reason for rejection:</label>
+                            <textarea id="rejectionReason" placeholder="Please provide a reason for rejecting this request..." rows="4"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-cancel" onclick="document.getElementById('rejectModal').remove(); resolve(null);">Cancel</button>
+                            <button class="btn-confirm" onclick="const reason = document.getElementById('rejectionReason').value; document.getElementById('rejectModal').remove(); resolve(reason || 'No reason provided');">Reject Request</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Insert modal into page
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Focus on textarea
             setTimeout(() => {
-                this.data.stats = {
-                    totalStock: 1250,
-                    pendingRequests: 8,
-                    approvedToday: 12,
-                    activeFarmers: 45,
-                    totalRevenue: 125000
-                };
-                resolve();
-            }, 1000);
+                document.getElementById('rejectionReason').focus();
+            }, 100);
+
+            // Handle modal actions
+            const modal = document.getElementById('rejectModal');
+            const cancelBtn = modal.querySelector('.btn-cancel');
+            const confirmBtn = modal.querySelector('.btn-confirm');
+            const textarea = modal.querySelector('#rejectionReason');
+
+            cancelBtn.onclick = () => {
+                modal.remove();
+                resolve(null);
+            };
+
+            confirmBtn.onclick = () => {
+                const reason = textarea.value.trim() || 'No reason provided';
+                modal.remove();
+                resolve(reason);
+            };
+
+            // Close on overlay click
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                    resolve(null);
+                }
+            };
+
+            // Handle Enter key in textarea
+            textarea.onkeydown = (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    confirmBtn.click();
+                }
+            };
         });
     }
 
-    async fetchStockData() {
-        // Simulate API call - replace with actual endpoint
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                this.data.stock = [
-                    {
-                        id: 1,
-                        category: 'Broiler',
-                        type: 'Cobb 500',
-                        age: 7,
-                        quantity: 500,
-                        date: '2024-01-15'
-                    },
-                    {
-                        id: 2,
-                        category: 'Layer',
-                        type: 'Lohmann Brown',
-                        age: 14,
-                        quantity: 300,
-                        date: '2024-01-14'
-                    },
-                    {
-                        id: 3,
-                        category: 'Broiler',
-                        type: 'Ross 308',
-                        age: 21,
-                        quantity: 450,
-                        date: '2024-01-13'
-                    }
-                ];
-                resolve();
-            }, 1200);
-        });
-    }
+    updateDashboardStats(stats) {
+        // Update pending requests
+        const pendingElement = document.querySelector('.stat-card.warning .stat-number');
+        if (pendingElement) {
+            this.animateNumberChange(pendingElement, stats.pendingRequests);
+        }
 
-    async fetchRequestsData() {
-        // Simulate API call - replace with actual endpoint
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                this.data.requests = [
-                    {
-                        id: 1,
-                        farmer: 'John Doe',
-                        chicks: 100,
-                        type: 'Broiler',
-                        cost: 16500,
-                        date: '2024-01-16',
-                        status: 'pending'
-                    },
-                    {
-                        id: 2,
-                        farmer: 'Jane Smith',
-                        chicks: 50,
-                        type: 'Layer',
-                        cost: 8250,
-                        date: '2024-01-15',
-                        status: 'pending'
-                    },
-                    {
-                        id: 3,
-                        farmer: 'Mike Johnson',
-                        chicks: 75,
-                        type: 'Broiler',
-                        cost: 12375,
-                        date: '2024-01-14',
-                        status: 'approved'
-                    }
-                ];
-                resolve();
-            }, 1500);
-        });
-    }
+        // Update approved requests
+        const approvedElement = document.querySelector('.stat-card.success .stat-number');
+        if (approvedElement) {
+            this.animateNumberChange(approvedElement, stats.approvedRequests);
+        }
 
-    async fetchActivitiesData() {
-        // Simulate API call - replace with actual endpoint
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                this.data.activities = [
-                    {
-                        id: 1,
-                        text: 'John Doe requested 100 Broiler chicks',
-                        time: '2 hours ago',
-                        type: 'request'
-                    },
-                    {
-                        id: 2,
-                        text: 'Stock updated: 300 Layer chicks added',
-                        time: '4 hours ago',
-                        type: 'stock'
-                    },
-                    {
-                        id: 3,
-                        text: 'Jane Smith\'s request approved',
-                        time: '6 hours ago',
-                        type: 'approval'
-                    }
-                ];
-                resolve();
-            }, 1800);
-        });
-    }
+        // Update total stock
+        const stockElement = document.querySelector('.stat-card.primary .stat-number');
+        if (stockElement) {
+            this.animateNumberChange(stockElement, stats.totalStock.totalChicks);
+        }
 
-    updateUI() {
-        this.updateStats();
-        this.updateStockList();
-        this.updateRequestsList();
-        this.updateActivitiesList();
-        this.updateAlerts();
-        this.updatePerformanceStats();
-        this.updateBadges();
-    }
-
-    updateStats() {
-        const { stats } = this.data;
-        
-        // Update stat numbers
-        document.getElementById('total-stock').textContent = stats.totalStock.toLocaleString();
-        document.getElementById('pending-requests').textContent = stats.pendingRequests;
-        document.getElementById('approved-today').textContent = stats.approvedToday;
-        document.getElementById('active-farmers').textContent = stats.activeFarmers;
-        document.getElementById('total-revenue').textContent = `$${stats.totalRevenue.toLocaleString()}`;
+        // Update revenue
+        const revenueElement = document.querySelector('.stat-card.revenue .stat-number');
+        if (revenueElement) {
+            this.animateNumberChange(revenueElement, `$${stats.chickSales.totalChickSales}`);
+        }
 
         // Update trends
-        document.getElementById('stock-trend').textContent = 
-            stats.totalStock > 1000 ? 'Good inventory level' : 'Low inventory - Restock needed';
-        document.getElementById('pending-trend').textContent = 
-            stats.pendingRequests > 0 ? `${stats.pendingRequests} requests awaiting approval` : 'All caught up';
-        document.getElementById('approved-trend').textContent = 
-            stats.approvedToday > 0 ? `${stats.approvedToday} approvals completed` : 'No approvals today';
-        document.getElementById('farmers-trend').textContent = 
-            stats.activeFarmers > 10 ? 'Growing community' : 'Building farmer network';
-        document.getElementById('revenue-trend').textContent = 'Strong performance';
+        this.updateTrends(stats);
+
+        // Update pending requests list
+        this.updatePendingRequestsList(stats.pendingRequestsList);
+
+        // Update stock alerts
+        this.updateStockAlerts(stats.stock);
+
+        // Update last refresh time
+        this.updateLastRefreshTime();
     }
 
-    updateStockList() {
-        const stockList = document.getElementById('stock-list');
-        if (!stockList) return;
-
-        if (this.data.stock.length === 0) {
-            stockList.innerHTML = '<div class="loading">No stock data available</div>';
-            return;
+    updateTrends(stats) {
+        const pendingTrend = document.querySelector('.stat-card.warning .stat-trend');
+        if (pendingTrend) {
+            pendingTrend.textContent = stats.pendingRequests > 0 
+                ? `${stats.pendingRequests} requests awaiting approval` 
+                : "All caught up";
         }
 
-        stockList.innerHTML = this.data.stock.map(item => `
-            <div class="stock-item">
-                <div class="stock-info">
-                    <h4>${item.category} - ${item.type}</h4>
-                    <div class="stock-details">Age: ${item.age} days | Quantity: ${item.quantity}</div>
-                    <div class="stock-date">Added: ${new Date(item.date).toLocaleDateString()}</div>
-                </div>
-                <div class="stock-status ${item.quantity > 100 ? 'good' : 'low'}">
-                    ${item.quantity > 100 ? 'Good Stock' : 'Low Stock'}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    updateRequestsList() {
-        const requestsList = document.getElementById('pending-requests-list');
-        if (!requestsList) return;
-
-        const pendingRequests = this.data.requests.filter(req => req.status === 'pending').slice(0, 3);
-
-        if (pendingRequests.length === 0) {
-            requestsList.innerHTML = '<div class="loading">No pending requests</div>';
-            return;
+        const approvedTrend = document.querySelector('.stat-card.success .stat-trend');
+        if (approvedTrend) {
+            approvedTrend.textContent = stats.approvedRequests > 0 
+                ? `${stats.approvedRequests} approvals completed` 
+                : "No approvals today";
         }
 
-        requestsList.innerHTML = pendingRequests.map(request => `
-            <div class="request-item">
-                <div class="request-info">
-                    <h4>${request.farmer}</h4>
-                    <div class="request-details">${request.chicks} ${request.type} chicks</div>
-                    <div class="request-cost">Cost: $${request.cost.toLocaleString()}</div>
-                </div>
-                <div class="request-actions">
-                    <button class="action-btn approve" data-id="${request.id}" data-action="approve">
-                        Approve
-                    </button>
-                    <button class="action-btn reject" data-id="${request.id}" data-action="reject">
-                        Reject
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    updateActivitiesList() {
-        const activitiesList = document.getElementById('activities-list');
-        if (!activitiesList) return;
-
-        if (this.data.activities.length === 0) {
-            activitiesList.innerHTML = '<div class="loading">No recent activities</div>';
-            return;
+        const stockTrend = document.querySelector('.stat-card.primary .stat-trend');
+        if (stockTrend) {
+            stockTrend.textContent = stats.totalStock.totalChicks > 100 
+                ? "Good inventory level" 
+                : "Low inventory - Restock needed";
         }
 
-        activitiesList.innerHTML = this.data.activities.map(activity => `
-            <div class="activity-item">
-                <div class="activity-dot ${activity.type}"></div>
-                <div class="activity-content">
-                    <div class="activity-text">${activity.text}</div>
-                    <div class="activity-time">${activity.time}</div>
-                </div>
-            </div>
-        `).join('');
+        const revenueTrend = document.querySelector('.stat-card.revenue .stat-trend');
+        if (revenueTrend) {
+            revenueTrend.textContent = stats.chickSales.totalChickSales > 0 
+                ? `${stats.chickSales.totalNumChicks} chicks sold` 
+                : "Start earning today";
+        }
     }
 
-    updateAlerts() {
-        const alertsList = document.getElementById('alerts-list');
-        if (!alertsList) return;
+    updatePendingRequestsList(requests) {
+        const container = document.querySelector('.pending-requests .card-content');
+        if (!container) return;
 
-        const lowStockItems = this.data.stock.filter(item => item.quantity < 100);
+        if (requests && requests.length > 0) {
+            const requestsHTML = requests.map(request => `
+                <div class="request-item" data-request-id="${request._id}">
+                    <div class="request-info">
+                        <div class="request-details">${request.user ? request.user.name : 'Unknown'} - ${request.numChicks} ${request.chickType} chicks</div>
+                        <div class="request-date">Requested: ${new Date(request.requestDate).toLocaleDateString()}</div>
+                        <div class="request-cost">Cost: $${request.totalCost || 0}</div>
+                    </div>
+                    <div class="request-actions">
+                        <a class="btn-approve" href="/requests/${request._id}">Approve</a>
+                        <a class="btn-reject" href="/requests/reject/${request._id}">Reject</a>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = requestsHTML;
+        } else {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">✅</div>
+                    <div class="empty-title">No pending requests</div>
+                    <div class="empty-subtitle">All requests processed</div>
+                </div>
+            `;
+        }
+    }
 
-        if (lowStockItems.length === 0) {
-            alertsList.innerHTML = `
+    updateStockAlerts(stock) {
+        const alertsContainer = document.querySelector('.alerts-card .card-content');
+        if (!alertsContainer || !stock) return;
+
+        const lowStockItems = stock.filter(item => item.number < 50);
+        
+        if (lowStockItems.length > 0) {
+            const alertsHTML = lowStockItems.map(item => `
+                <div class="alert-item warning">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <div class="alert-title">Low Stock Alert</div>
+                        <div class="alert-desc">${item.type} stock is low (${item.number} remaining)</div>
+                    </div>
+                    <div class="alert-action">
+                        <a class="btn-small" href="/addchicks">Restock</a>
+                    </div>
+                </div>
+            `).join('');
+            
+            alertsContainer.innerHTML = alertsHTML;
+        } else if (stock.length > 0) {
+            alertsContainer.innerHTML = `
                 <div class="alert-item success">
-                    <i data-lucide="check-circle"></i>
+                    <div class="alert-icon">✅</div>
                     <div class="alert-content">
                         <div class="alert-title">All Good!</div>
                         <div class="alert-desc">No stock alerts at this time</div>
                     </div>
                 </div>
             `;
-        } else {
-            alertsList.innerHTML = lowStockItems.map(item => `
-                <div class="alert-item warning">
-                    <i data-lucide="alert-triangle"></i>
-                    <div class="alert-content">
-                        <div class="alert-title">Low Stock Alert</div>
-                        <div class="alert-desc">${item.type} stock is low (${item.quantity} remaining)</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Re-initialize icons for new content
-        this.initializeLucideIcons();
-    }
-
-    updatePerformanceStats() {
-        const { stats } = this.data;
-        
-        document.getElementById('total-chicks-sold').textContent = stats.totalStock;
-        document.getElementById('monthly-revenue').textContent = `$${stats.totalRevenue.toLocaleString()}`;
-        document.getElementById('completed-orders').textContent = stats.approvedToday;
-    }
-
-    updateBadges() {
-        const pendingBadge = document.getElementById('pending-badge');
-        const notificationBadge = document.getElementById('notification-badge');
-        
-        if (pendingBadge) {
-            pendingBadge.textContent = this.data.stats.pendingRequests;
-        }
-        
-        if (notificationBadge) {
-            notificationBadge.textContent = '3'; // Static for demo
         }
     }
 
-    handleNavigation(e, item) {
-        e.preventDefault();
+    animateNumberChange(element, newValue) {
+        element.classList.add('stat-updating');
         
-        // Remove active class from all nav items
-        document.querySelectorAll('.nav-item').forEach(navItem => {
-            navItem.classList.remove('active');
-        });
-        
-        // Add active class to clicked item
-        item.classList.add('active');
-        
-        // Handle navigation logic here
-        const section = item.dataset.section;
-        if (section) {
-            this.navigateToSection(section);
-        }
-    }
-
-    navigateToSection(section) {
-        console.log(`Navigating to section: ${section}`);
-        // Implement section navigation logic
-    }
-
-    handleSearch(query) {
-        console.log(`Searching for: ${query}`);
-        // Implement search functionality
-        if (query.length > 2) {
-            this.performSearch(query);
-        }
-    }
-
-    performSearch(query) {
-        // Filter data based on search query
-        const filteredRequests = this.data.requests.filter(request => 
-            request.farmer.toLowerCase().includes(query.toLowerCase()) ||
-            request.type.toLowerCase().includes(query.toLowerCase())
-        );
-        
-        const filteredStock = this.data.stock.filter(stock => 
-            stock.type.toLowerCase().includes(query.toLowerCase()) ||
-            stock.category.toLowerCase().includes(query.toLowerCase())
-        );
-        
-        console.log('Search results:', { requests: filteredRequests, stock: filteredStock });
-        // Update UI with filtered results
-    }
-
-    handleQuickAction(e) {
-        e.preventDefault();
-        const action = e.currentTarget.textContent.trim();
-        console.log(`Quick action clicked: ${action}`);
-        
-        if (action.includes('Add Stock')) {
-            this.navigateToAddStock();
-        } else if (action.includes('Review Requests')) {
-            this.navigateToRequests();
-        }
-    }
-
-    handleActionClick(e, item) {
-        e.preventDefault();
-        const actionTitle = item.querySelector('.action-title').textContent;
-        console.log(`Action clicked: ${actionTitle}`);
-        
-        switch (actionTitle) {
-            case 'Add New Stock':
-                this.navigateToAddStock();
-                break;
-            case 'Update Stock':
-                this.navigateToUpdateStock();
-                break;
-            case 'Generate Report':
-                this.generateReport();
-                break;
-        }
-    }
-
-    handleRequestAction(e) {
-        e.preventDefault();
-        const action = e.target.dataset.action;
-        const requestId = e.target.dataset.id;
-        
-        if (action === 'approve') {
-            this.approveRequest(requestId);
-        } else if (action === 'reject') {
-            this.rejectRequest(requestId);
-        }
-    }
-
-    async approveRequest(requestId) {
-        try {
-            console.log(`Approving request: ${requestId}`);
-            
-            // Show loading state
-            const button = document.querySelector(`[data-id="${requestId}"][data-action="approve"]`);
-            const originalText = button.textContent;
-            button.textContent = 'Approving...';
-            button.disabled = true;
-            
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Update local data
-            const request = this.data.requests.find(r => r.id == requestId);
-            if (request) {
-                request.status = 'approved';
-                this.data.stats.pendingRequests--;
-                this.data.stats.approvedToday++;
-            }
-            
-            // Refresh UI
-            this.updateUI();
-            this.showSuccess('Request approved successfully');
-            
-        } catch (error) {
-            console.error('Error approving request:', error);
-            this.showError('Failed to approve request');
-        }
-    }
-
-    async rejectRequest(requestId) {
-        try {
-            console.log(`Rejecting request: ${requestId}`);
-            
-            // Show confirmation dialog
-            if (!confirm('Are you sure you want to reject this request?')) {
-                return;
-            }
-            
-            // Show loading state
-            const button = document.querySelector(`[data-id="${requestId}"][data-action="reject"]`);
-            const originalText = button.textContent;
-            button.textContent = 'Rejecting...';
-            button.disabled = true;
-            
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Update local data
-            const request = this.data.requests.find(r => r.id == requestId);
-            if (request) {
-                request.status = 'rejected';
-                this.data.stats.pendingRequests--;
-            }
-            
-            // Refresh UI
-            this.updateUI();
-            this.showSuccess('Request rejected successfully');
-            
-        } catch (error) {
-            console.error('Error rejecting request:', error);
-            this.showError('Failed to reject request');
-        }
-    }
-
-    handleCardAction(e) {
-        e.preventDefault();
-        const action = e.target.textContent.trim();
-        console.log(`Card action clicked: ${action}`);
-        
-        switch (action) {
-            case 'Manage Stock':
-                this.navigateToStockManagement();
-                break;
-            case 'View All':
-                this.navigateToAllRequests();
-                break;
-        }
-    }
-
-    handleLogout() {
-        if (confirm('Are you sure you want to logout?')) {
-            console.log('Logging out...');
-            // Implement logout logic
-            window.location.href = '/logout';
-        }
-    }
-
-    handleNotifications() {
-        console.log('Opening notifications...');
-        // Implement notifications panel
-        this.showNotifications();
-    }
-
-    // Navigation methods
-    navigateToAddStock() {
-        console.log('Navigating to Add Stock page');
-        window.location.href = '/addchicks';
-    }
-
-    navigateToRequests() {
-        console.log('Navigating to Requests page');
-        window.location.href = '/requests';
-    }
-
-    navigateToUpdateStock() {
-        console.log('Navigating to Update Stock page');
-        window.location.href = '/updatechick';
-    }
-
-    navigateToStockManagement() {
-        console.log('Navigating to Stock Management page');
-        window.location.href = '/chickslist';
-    }
-
-    navigateToAllRequests() {
-        console.log('Navigating to All Requests page');
-        window.location.href = '/manager/requests/all';
-    }
-
-    generateReport() {
-        console.log('Generating report...');
-        // Implement report generation
-        this.showSuccess('Report generation started. You will be notified when ready.');
-    }
-
-    showNotifications() {
-        // Create and show notifications panel
-        const notifications = [
-            { id: 1, text: 'Low stock alert: Broiler chicks running low', time: '5 min ago', type: 'warning' },
-            { id: 2, text: 'New request from John Doe', time: '10 min ago', type: 'info' },
-            { id: 3, text: 'Stock updated successfully', time: '1 hour ago', type: 'success' }
-        ];
-        
-        console.log('Notifications:', notifications);
-        // Implement notification panel UI
-    }
-
-    // Utility methods
-    showSuccess(message) {
-        this.showToast(message, 'success');
-    }
-
-    showError(message) {
-        this.showToast(message, 'error');
-    }
-
-    showToast(message, type = 'info') {
-        // Create toast notification
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-        
-        // Style the toast
-        Object.assign(toast.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            color: 'white',
-            fontWeight: '500',
-            zIndex: '9999',
-            transform: 'translateX(100%)',
-            transition: 'transform 0.3s ease'
-        });
-        
-        // Set background color based on type
-        const colors = {
-            success: '#10b981',
-            error: '#ef4444',
-            warning: '#f59e0b',
-            info: '#3b82f6'
-        };
-        toast.style.backgroundColor = colors[type] || colors.info;
-        
-        // Add to DOM
-        document.body.appendChild(toast);
-        
-        // Animate in
         setTimeout(() => {
-            toast.style.transform = 'translateX(0)';
-        }, 100);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            toast.style.transform = 'translateX(100%)';
+            element.textContent = newValue;
+            element.classList.remove('stat-updating');
+            element.classList.add('stat-updated');
+            
             setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 300);
+                element.classList.remove('stat-updated');
+            }, 1000);
+        }, 300);
+    }
+
+    animateRevenueUpdate(newRevenue) {
+        const revenueCard = document.querySelector('.stat-card.revenue');
+        if (revenueCard) {
+            revenueCard.classList.add('revenue-pulse');
+            setTimeout(() => {
+                revenueCard.classList.remove('revenue-pulse');
+            }, 2000);
+        }
+    }
+
+    animateStatsUpdate() {
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('card-highlight');
+                setTimeout(() => {
+                    card.classList.remove('card-highlight');
+                }, 1000);
+            }, index * 200);
+        });
+    }
+
+    showApprovalAnimation(approvedOrder) {
+        // Create a temporary success notification with order details
+        const successHTML = `
+            <div class="approval-success-animation">
+                <div class="success-icon">✅</div>
+                <div class="success-details">
+                    <h4>Request Approved!</h4>
+                    <p>${approvedOrder.farmerName} - ${approvedOrder.numChicks} ${approvedOrder.chickType} chicks</p>
+                    <p>Revenue: $${approvedOrder.totalCost}</p>
+                </div>
+            </div>
+        `;
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = successHTML;
+        tempDiv.className = 'approval-animation-container';
+        
+        document.body.appendChild(tempDiv);
+        
+        setTimeout(() => {
+            tempDiv.remove();
         }, 3000);
     }
 
-    formatCurrency(amount) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
+    removeRequestFromUI(requestId) {
+        const requestElement = document.querySelector(`[data-request-id="${requestId}"]`);
+        if (requestElement) {
+            requestElement.classList.add('request-removing');
+            setTimeout(() => {
+                requestElement.remove();
+            }, 500);
+        }
     }
 
-    formatDate(date) {
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+    extractRequestId(href) {
+        const matches = href.match(/\/requests\/([^\/]+)$/);
+        return matches ? matches[1] : null;
+    }
+
+    showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.dashboard-notification');
+        existingNotifications.forEach(notification => notification.remove());
+
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `dashboard-notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="notification-icon">
+                    ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
+                </div>
+                <div class="notification-message">${message}</div>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.classList.add('notification-fade-out');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    filterRequests(searchTerm) {
+        const requestItems = document.querySelectorAll('.request-item');
+        const searchLower = searchTerm.toLowerCase();
+
+        requestItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(searchLower)) {
+                item.style.display = 'block';
+                item.classList.remove('filtered-out');
+            } else {
+                item.style.display = 'none';
+                item.classList.add('filtered-out');
+            }
         });
     }
 
-    formatTime(date) {
-        return new Date(date).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+    async refreshDashboard() {
+        this.showNotification('Refreshing dashboard...', 'info');
+        
+        try {
+            const response = await fetch('/api/dashboard-stats', {
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.updateDashboardStats(data.data);
+                this.showNotification('Dashboard refreshed successfully', 'success');
+            } else {
+                this.showNotification('Failed to refresh dashboard', 'error');
+            }
+        } catch (error) {
+            console.error('Error refreshing dashboard:', error);
+            this.showNotification('Network error while refreshing', 'error');
+        }
+    }
+
+    startAutoRefresh() {
+        // Auto refresh every 30 seconds
+        setInterval(() => {
+            this.refreshDashboard();
+        }, 30000);
+    }
+
+    updateLastRefreshTime() {
+        const lastUpdateElement = document.querySelector('.last-update');
+        if (lastUpdateElement) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            lastUpdateElement.textContent = `Last updated: ${timeString}`;
+        }
     }
 }
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const dashboard = new DashboardManager();
+    window.managerDashboard = new ManagerDashboard();
+});
+
+// Add some CSS animations via JavaScript
+const style = document.createElement('style');
+style.textContent = `
+    .stat-updating {
+        opacity: 0.5;
+        transform: scale(0.95);
+        transition: all 0.3s ease;
+    }
     
-    // Make dashboard globally available for debugging
-    window.dashboard = dashboard;
-});
-
-// Handle window resize
-window.addEventListener('resize', () => {
-    // Handle responsive adjustments if needed
-    console.log('Window resized');
-});
-
-// Handle page visibility changes
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-        // Refresh data when page becomes visible
-        console.log('Page became visible, refreshing data...');
-        if (window.dashboard) {
-            window.dashboard.loadDashboardData();
+    .stat-updated {
+        color: #10b981;
+        transform: scale(1.05);
+        transition: all 0.3s ease;
+    }
+    
+    .card-highlight {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        transform: translateY(-2px);
+        transition: all 0.5s ease;
+    }
+    
+    .revenue-pulse {
+        animation: revenuePulse 2s ease-in-out;
+    }
+    
+    @keyframes revenuePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(34, 197, 94, 0.4); }
+    }
+    
+    .request-removing {
+        opacity: 0;
+        transform: translateX(-100%);
+        transition: all 0.5s ease;
+    }
+    
+    .dashboard-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        min-width: 300px;
+        animation: slideInRight 0.3s ease;
+    }
+    
+    .dashboard-notification.success {
+        border-left: 4px solid #10b981;
+    }
+    
+    .dashboard-notification.error {
+        border-left: 4px solid #ef4444;
+    }
+    
+    .dashboard-notification.warning {
+        border-left: 4px solid #f59e0b;
+    }
+    
+    .dashboard-notification.info {
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .notification-content {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .notification-icon {
+        font-size: 20px;
+    }
+    
+    .notification-message {
+        flex: 1;
+        font-weight: 500;
+    }
+    
+    .notification-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+    }
+    
+    .notification-close:hover {
+        opacity: 1;
+    }
+    
+    .notification-fade-out {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
         }
     }
-});
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .reject-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .reject-modal {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        max-width: 500px;
+        width: 90%;
+        animation: modalSlideIn 0.3s ease;
+    }
+    
+    .modal-header {
+        padding: 20px 20px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        margin: 0;
+        color: #1f2937;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+    }
+    
+    .modal-close:hover {
+        opacity: 1;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .modal-body label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .modal-body textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        resize: vertical;
+        font-family: inherit;
+        font-size: 14px;
+    }
+    
+    .modal-body textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .modal-footer {
+        padding: 0 20px 20px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+    
+    .btn-cancel, .btn-confirm {
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #374151;
+    }
+    
+    .btn-cancel:hover {
+        background: #e5e7eb;
+    }
+    
+    .btn-confirm {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-confirm:hover {
+        background: #dc2626;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .approval-animation-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3000;
+        animation: approvalAnimation 3s ease forwards;
+    }
+    
+    .approval-success-animation {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        border: 2px solid #10b981;
+    }
+    
+    .success-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+    
+    .success-details h4 {
+        color: #10b981;
+        margin: 0 0 12px 0;
+        font-size: 20px;
+    }
+    
+    .success-details p {
+        margin: 6px 0;
+        color: #374151;
+    }
+    
+    @keyframes approvalAnimation {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+        20% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        80% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+    }
+    
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .btn-approve.loading,
+    .btn-reject.loading {
+        background: #9ca3af !important;
+        cursor: not-allowed;
+    }
+`;
+
+document.head.appendChild(style);

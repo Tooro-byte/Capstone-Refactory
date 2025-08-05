@@ -21,7 +21,7 @@ block content
           .section-title Dashboard
           ul.nav-list
             li.nav-item.active
-              a.nav-link(href="/managerDashboard")
+              a.nav-link(href="/managerDashBoard")
                 .nav-icon 📊
                 span Overview
             li.nav-item
@@ -54,7 +54,7 @@ block content
           .section-title Request Management
           ul.nav-list
             li.nav-item
-              a.nav-link(href="/manager/requests/pending")
+              a.nav-link(href="/requests")
                 .nav-icon ⏳
                 span Pending Requests
             li.nav-item
@@ -66,7 +66,7 @@ block content
                 .nav-icon 🚚
                 span Dispatched Requests
             li.nav-item
-              a.nav-link(href="/manager/requests/all")
+              a.nav-link(href="/requests")
                 .nav-icon 📊
                 span All Requests
 
@@ -103,10 +103,6 @@ block content
           .status-indicator.online
           .status-text System Online
           .last-update Last updated: 2 min ago
-        .logout-btn
-          a(href="/logout")
-            .logout-icon 🚪
-            span Logout
 
     //- Main Content
     .main-content
@@ -116,7 +112,7 @@ block content
             span Manager Dashboard
             .breadcrumb-separator /
             span Overview
-          .page-title= `Welcome Back, ${currentManager ? currentManager.name : 'Manager'}! 👋`
+          .page-title= `Hello👋, ${currentManager ? currentManager.name : 'Manager'}!`
           .page-subtitle Manage your brooder operations efficiently
 
         .header-right
@@ -130,9 +126,12 @@ block content
               a.quick-btn.primary(href="/addchicks")
                 .btn-icon ➕
                 span Add Stock
-              a.quick-btn.secondary(href="/manager/requests/pending")
+              a.quick-btn.secondary(href="/requests")
                 .btn-icon 📋
                 span Review Requests
+              a.quick-btn.logout(href="/logout")
+                .btn-icon 🚪
+                span Logout
 
       .dashboard-content
         .stats-grid
@@ -184,11 +183,14 @@ block content
                         .stock-type= `${item.category} - ${item.type}`
                         .stock-age= `Age: ${item.age} days | Quantity: ${item.number}`
                         .stock-date= `Added: ${item.stock_date ? new Date(item.stock_date).toLocaleDateString() : 'N/A'}`
+                        if item.number < 50
+                          .stock-alert ⚠️ Low Stock
                 else
-                  .stock-item
-                    .stock-info
-                      .stock-type No stock data available
-                      .stock-age Add stock to get started
+                  .empty-state
+                    .empty-icon 📦
+                    .empty-title No stock data available
+                    .empty-subtitle Add stock to get started
+                    a.btn-primary(href="/addchicks") Add Stock
 
           .dashboard-card.pending-requests
             .card-header
@@ -196,21 +198,24 @@ block content
                 .title-icon ⏳
                 span Pending Approval Requests
               .card-actions
-                a.view-all(href="/manager/requests/pending") View All
+                a.view-all(href="/requests") View All
             .card-content
-              if requests && requests.length > 0
-                each request in requests.slice(0, 5)
-                  if request.status === 'pending' || request.status === 'Pending'
-                    .request-item
-                      .request-info
-                        .request-details= `${request.user ? request.user.name : 'Unknown'} - ${request.numChicks} ${request.chickType} chicks`
-                        .request-date= `Requested: ${new Date(request.requestDate).toLocaleDateString()}`
-                        .request-cost= `Cost: $${request.totalCost || 0}`
+              - var pendingRequestsList = requests ? requests.filter(req => req.status === 'pending' || req.status === 'Pending') : []
+              if pendingRequestsList && pendingRequestsList.length > 0
+                each request in pendingRequestsList.slice(0, 5)
+                  .request-item
+                    .request-info
+                      .request-details= `${request.user ? request.user.name : 'Unknown'} - ${request.numChicks} ${request.chickType} chicks`
+                      .request-date= `Requested: ${new Date(request.requestDate).toLocaleDateString()}`
+                      .request-cost= `Cost: $${request.totalCost || 0}`
+                    .request-actions
+                      a.btn-approve(href=`/requests/${request._id}`) Approve
+                      a.btn-reject(href=`/requests/reject/${request._id}`) Reject
               else
-                .request-item
-                  .request-info
-                    .request-details No pending requests
-                    .request-date All requests processed
+                .empty-state
+                  .empty-icon ✅
+                  .empty-title No pending requests
+                  .empty-subtitle All requests processed
 
           .dashboard-card.quick-actions-card
             .card-header
@@ -228,12 +233,12 @@ block content
                   .action-icon 🔄
                   .action-title Update Stock
                   .action-desc Modify existing inventory
-                  a.action-btn(href="/updatechick") Update
+                  a.action-btn(href="/chickslist") Update
                 .action-item
                   .action-icon 📊
-                  .action-title Generate Report
-                  .action-desc Create inventory reports
-                  a.action-btn(href="/manager/reports") Generate
+                  .action-title View All Requests
+                  .action-desc Manage farmer requests
+                  a.action-btn(href="/requests") View Requests
 
           .dashboard-card.activities-card
             .card-header
@@ -242,16 +247,17 @@ block content
                 span Recent Activities
             .card-content
               if requests && requests.length > 0
-                each request in requests.slice(0, 3)
+                each request in requests.slice(0, 5)
                   .activity-item
                     .activity-content
                       .activity-text= `${request.user ? request.user.name : 'Unknown'} requested ${request.numChicks} ${request.chickType} chicks - ${request.status}`
                       .activity-time= new Date(request.requestDate).toLocaleDateString()
+                    .activity-status(class=request.status.toLowerCase())= request.status
               else
-                .activity-item
-                  .activity-content
-                    .activity-text No recent activities
-                    .activity-time Start managing to see activities
+                .empty-state
+                  .empty-icon 📋
+                  .empty-title No recent activities
+                  .empty-subtitle Start managing to see activities
 
           .dashboard-card.alerts-card
             .card-header
@@ -268,8 +274,10 @@ block content
                       .alert-content
                         .alert-title Low Stock Alert
                         .alert-desc= `${item.type} stock is low (${item.number} remaining)`
+                      .alert-action
+                        a.btn-small(href="/addchicks") Restock
                 else
-                  .alert-item.info
+                  .alert-item.success
                     .alert-icon ✅
                     .alert-content
                       .alert-title All Good!
@@ -280,12 +288,14 @@ block content
                   .alert-content
                     .alert-title No Stock Data
                     .alert-desc Please add stock to monitor levels
+                  .alert-action
+                    a.btn-small(href="/addchicks") Add Stock
 
           .dashboard-card.chart-card
             .card-header
               .card-title
                 .title-icon 📈
-                span Monthly Performance
+                span Performance Overview
               .chart-period
                 select.period-select
                   option Last 6 Months
@@ -302,18 +312,17 @@ block content
                   .stat-item
                     .stat-value= approvedRequests + dispatchedRequests
                     .stat-label Completed Orders
-                .chart-labels
-                  span Aug
-                  span Sep
-                  span Oct
-                  span Nov
-                  span Dec
-                  span Jan
-                .chart-legend
-                  .legend-items
-                    .legend-color.approvals
-                    span Approvals
+                .performance-summary
+                  .summary-item
+                    .summary-label Current Manager:
+                    .summary-value= currentManager ? currentManager.name : 'Not Available'
+                  .summary-item
+                    .summary-label Email:
+                    .summary-value= currentManager ? currentManager.email : 'Not Available'
+                  .summary-item
+                    .summary-label Role:
+                    .summary-value= currentManager ? currentManager.role : 'brooderManager'
 
 block append head
   link(rel="stylesheet", href="/Styles/manager-dashboard.css")
-  //- script(src="/vanilla-js/manager-dashboard.js")
+  script(src="/vanilla-js/manager-dashboard.js")
