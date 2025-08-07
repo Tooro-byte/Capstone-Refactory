@@ -162,7 +162,7 @@ block content
           .stat-card.revenue
             .stat-icon 💰
             .stat-content
-              .stat-number= chickSales ? `$${chickSales.totalChickSales || 0}` : "$0"
+              .stat-number= chickSales ? `$${chickSales.totalChickSales || 0}` : "UGX0"
               .stat-label Total Revenue
               .stat-trend= chickSales && chickSales.totalChickSales > 0 ? `${chickSales.totalNumChicks || 0} chicks sold` : "Start earning today"
 
@@ -307,7 +307,7 @@ block content
                     .stat-value= chickSales ? chickSales.totalNumChicks || 0 : 0
                     .stat-label Total Chicks Sold
                   .stat-item
-                    .stat-value= chickSales ? `$${chickSales.totalChickSales || 0}` : "$0"
+                    .stat-value= chickSales ? `$${chickSales.totalChickSales || 0}` : "UGX0"
                     .stat-label Total Revenue
                   .stat-item
                     .stat-value= approvedRequests + dispatchedRequests

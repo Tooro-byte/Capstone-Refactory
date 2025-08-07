@@ -236,10 +236,10 @@ class ManagerDashboard {
         // Update revenue
         const revenueElement = document.querySelector('.stat-card.revenue .stat-number');
         if (revenueElement) {
-            this.animateNumberChange(revenueElement, `$${stats.chickSales.totalChickSales}`);
+            this.animateNumberChange(revenueElement, `UGX ${stats.chickSales.totalChickSales.toLocaleString()}`);
         }
 
-        // Update trends
+        // Update trendsS
         this.updateTrends(stats);
 
         // Update pending requests list
@@ -292,7 +292,7 @@ class ManagerDashboard {
                     <div class="request-info">
                         <div class="request-details">${request.user ? request.user.name : 'Unknown'} - ${request.numChicks} ${request.chickType} chicks</div>
                         <div class="request-date">Requested: ${new Date(request.requestDate).toLocaleDateString()}</div>
-                        <div class="request-cost">Cost: $${request.totalCost || 0}</div>
+                        <div class="request-cost">Cost: UGX ${(request.totalCost || 0).toLocaleString()}</div>
                     </div>
                     <div class="request-actions">
                         <a class="btn-approve" href="/requests/${request._id}">Approve</a>
@@ -391,7 +391,7 @@ class ManagerDashboard {
                 <div class="success-details">
                     <h4>Request Approved!</h4>
                     <p>${approvedOrder.farmerName} - ${approvedOrder.numChicks} ${approvedOrder.chickType} chicks</p>
-                    <p>Revenue: $${approvedOrder.totalCost}</p>
+                    <p>Revenue: UGX ${approvedOrder.totalCost.toLocaleString()}</p>
                 </div>
             </div>
         `;
@@ -496,7 +496,7 @@ class ManagerDashboard {
         // Auto refresh every 30 seconds
         setInterval(() => {
             this.refreshDashboard();
-        }, 30000);
+        }, 100000);
     }
 
     updateLastRefreshTime() {
