@@ -1,113 +1,180 @@
-/* Center the form */
+/* Main container with background image */
 .signup-container {
-  min-height: calc(100vh - 120px);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f3f3f3;
-  padding: 40px 20px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  padding: 1.5rem;
 }
 
-/* Card with transparent style */
+/* Overlay for better form readability */
+.signup-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* Dark overlay for contrast */
+  z-index: 1;
+}
+
+/* Card styling */
 .card {
-  background-color: rgba(255, 255, 255, 0.85);
-  border: 2px solid purple;
-  border-radius: 12px;
-  padding: 40px 30px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2.5rem;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 2;
 }
 
-/* Animated Title */
+/* Title with animation */
 .signup-title {
-  font-size: 28px;
+  font-size: 2.5rem;
+  font-weight: 800;
   text-align: center;
-  margin-bottom: 25px;
-  color: purple;
-  animation: fadeSlideIn 0.8s ease-in-out;
+  margin-bottom: 2rem;
+  color: #2d1b4e;
+  animation: fadeIn 0.8s ease-out;
 }
 
-@keyframes fadeSlideIn {
+@keyframes fadeIn {
   0% {
     opacity: 0;
-    transform: translateY(-15px);
+    transform: scale(0.95);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
 /* Form group styling */
 .form-group {
-  margin-bottom: 18px;
+  margin-bottom: 1.75rem;
 }
 
 label {
   display: block;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 6px;
-  color: #333;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
 }
 
 input,
 select {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 15px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  transition: border-color 0.3s ease;
-  background-color: #fff;
+  padding: 0.9rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #f9fafb;
+  transition: all 0.3s ease;
 }
 
 input:focus,
 select:focus {
-  border-color: purple;
+  border-color: #5b21b6;
+  box-shadow: 0 0 0 4px rgba(91, 33, 182, 0.2);
   outline: none;
 }
 
-/* Button */
-button.btn {
+input::placeholder,
+select:invalid {
+  color: #9ca3af;
+}
+
+/* Button styling */
+.btn {
   width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  background-color: purple;
-  color: #fff;
+  padding: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #5b21b6 0%, #7c3aed 100%);
+  color: #ffffff;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
 
-button.btn:hover {
-  background-color: #5e2a84;
+.btn:hover {
+  background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%);
+  transform: translateY(-2px);
 }
 
-/* Text under form */
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Text and link styling */
 .text-center {
   text-align: center;
 }
 
 .text-sm {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .text-gray-600 {
-  color: #666;
+  color: #4b5563;
 }
 
 .mt-6 {
-  margin-top: 24px;
+  margin-top: 1.5rem;
 }
 
-a.text-purple-600 {
-  color: purple;
+.text-primary {
+  color: #5b21b6;
   text-decoration: none;
+  font-weight: 600;
 }
 
-a.text-purple-600:hover {
-  color: #5e2a84;
+.text-primary:hover {
+  color: #7c3aed;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .signup-container {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .signup-title {
+    font-size: 2rem;
+  }
+
+  .btn {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-title {
+    font-size: 1.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  input,
+  select {
+    padding: 0.75rem;
+  }
 }

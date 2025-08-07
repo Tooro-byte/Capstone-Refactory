@@ -96,10 +96,6 @@ block content
             .temperature 28°C
             .condition Sunny
             .location Kampala, UG
-        .logout-btn
-          a(href="/logout")
-            .logout-icon 🚪
-            span Logout
 
     //- Main Content
     .main-content
@@ -110,7 +106,7 @@ block content
             span Dashboard
             .breadcrumb-separator /
             span Overview
-          .page-title Welcome Back, #{user.name || 'Farmer'}! 👋
+          .page-title Hello 👋, #{user.name || 'Farmer'}!
           .page-subtitle Here's what's happening with your farming journey
 
         .header-right
@@ -126,6 +122,9 @@ block content
               button.quick-btn.primary(onclick="window.location.href='/chickRequest'")
                 .btn-icon ➕
                 span New Request
+              button.quick-btn.logout-btn(onclick="window.location.href='/logout'")
+                .btn-icon 🚪
+                span Logout
 
       //- Dashboard Content
       .dashboard-content

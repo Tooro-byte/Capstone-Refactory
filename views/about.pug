@@ -1,0 +1,194 @@
+extends layout 
+block content 
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title About Us - Young4Chicks| Empowering Youth Through Agriculture
+    link(rel="stylesheet", href="/Styles/about.css")
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap", rel="stylesheet")
+    link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css", rel="stylesheet")
+  
+  body
+    //-Hero Section
+    section.hero
+      .hero-overlay
+      .hero-content
+        .container
+          h1.hero-title Empowering Uganda's Youth Through Agriculture
+          p.hero-subtitle Founded by youth parliamentarians to create wealth and economic opportunities for the next generation
+          .hero-stats
+            .stat-item
+              .stat-number 18-30
+              .stat-label Age Range
+            .stat-item
+              .stat-number 1,650
+              .stat-label UGx Per Chick
+            .stat-item
+              .stat-number 500
+              .stat-label Max Chicks/Farmer
+
+    //-Main Content
+    main.main-content
+      .container
+        
+        //-Mission Section
+        section.mission-section
+          .section-grid
+            .content-block
+              h2.section-title Our Mission
+              p.lead Bridging the gap between youth potential and agricultural prosperity in Uganda's urban centers.
+              p Young4ChickS was established with a clear vision: to transform how young urban dwellers engage with agriculture as a pathway to wealth creation and economic participation. We believe that every young person deserves access to sustainable income opportunities that can grow with their ambitions.
+              
+              .mission-points
+                .point-item
+                  i.fas.fa-seedling
+                  span Sustainable Agriculture
+                .point-item
+                  i.fas.fa-chart-line
+                  span Wealth Creation
+                .point-item
+                  i.fas.fa-users
+                  span Youth Empowerment
+                .point-item
+                  i.fas.fa-city
+                  span Urban Focus
+
+            .image-block
+              .image-container
+                img(src="/Images/R.jpg", alt="Young farmers with chicks")
+                .image-overlay
+                  .overlay-text "Cultivating Tomorrow's Entrepreneurs"
+
+        //-How It Works Section
+        section.how-it-works
+          h2.section-title How Young4ChickS Works
+          .process-grid
+            .process-step(data-step="1")
+              .step-icon
+                i.fas.fa-user-plus
+              .step-content
+                h3 Registration
+                p Young farmers (18-30) register with a recommender's NIN number for verification and community support.
+            
+            .process-step(data-step="2")
+              .step-icon
+                i.fas.fa-clipboard-list
+              .step-content
+                h3 Request Submission
+                p Submit requests for chicks every 4 months. Starters get 100 chicks, returning farmers up to 500.
+            
+            .process-step(data-step="3")
+              .step-icon
+                i.fas.fa-check-circle
+              .step-content
+                h3 Approval Process
+                p Our Brooder Manager reviews and approves requests, ensuring fair distribution and stock availability.
+            
+            .process-step(data-step="4")
+              .step-icon
+                i.fas.fa-handshake
+              .step-content
+                h3 Collection & Support
+                p Collect your chicks and receive 2 bags of feed (payable after 2 months) to kickstart your farming journey.
+
+        //-Services Section
+        section.services-section
+          h2.section-title What We Offer
+          .services-grid
+            .service-card
+              .card-icon
+                i.fas.fa-egg
+              .card-content
+                h3 Quality Chicks
+                p Both layers and broilers available in local and exotic varieties, all at a fixed price of UGx 1,650 per chick.
+            
+            .service-card
+              .card-icon
+                i.fas.fa-shopping-bag
+              .card-content
+                h3 Feed Support
+                p Each farmer receives 2 bags of quality feed with flexible payment terms to ensure your chicks get the best start.
+            
+            .service-card
+              .card-icon
+                i.fas.fa-phone
+              .card-content
+                h3 Dedicated Support
+                p Our sales representatives are available to take your calls, process requests, and provide ongoing assistance.
+            
+            .service-card
+              .card-icon
+                i.fas.fa-laptop
+              .card-content
+                h3 Digital Tracking
+                p Track your requests online from submission to approval, with real-time updates on stock availability.
+
+        //-Leadership Section
+        section.leadership-section
+          h2.section-title Leadership & Vision
+          .leadership-content
+            .leader-card
+              .leader-image
+                img(src="/Images/mp.jpg", alt="Founder - Youth MP")
+                .leader-badge Youth MP Founder
+              .leader-info
+                h3 Founded by Youth Parliament
+                p Young4ChickS was established by forward-thinking youth Members of Parliament who recognized the untapped potential in Uganda's young urban population. Our parliamentary backing ensures that we understand both the challenges and opportunities facing young Ugandans today.
+                .leader-quote
+                  blockquote "We're not just selling chicks – we're selling dreams, opportunities, and a pathway to financial independence for Uganda's youth."
+
+        //-Team Section
+        section.team-section
+          h2.section-title Our Team Structure
+          .team-grid
+            .team-role
+              .role-icon
+                i.fas.fa-warehouse
+              .role-info
+                h3 Brooder Manager
+                p Oversees stock management, approves farmer requests, and ensures quality control across all operations.
+                .role-responsibilities
+                  span Stock Management
+                  span Request Approval
+                  span Quality Assurance
+
+            .team-role
+              .role-icon
+                i.fas.fa-headset
+              .role-info
+                h3 Sales Representatives
+                p Three dedicated professionals handling call-in requests, registration, and customer support services.
+                .role-responsibilities
+                  span Customer Support
+                  span Request Processing
+                  span Sales Coordination
+
+        //-Impact Section
+        section.impact-section
+          .impact-bg
+          .impact-content
+            .container
+              h2.section-title Our Impact
+              .impact-grid
+                .impact-stat
+                  .impact-number 1000+
+                  .impact-label Young Farmers Supported
+                
+                .impact-stat
+                  .impact-number 85%
+                  .impact-label Success Rate
+                
+                .impact-stat
+                  .impact-number 4
+                  .impact-label Months Average ROI
+                
+                .impact-stat
+                  .impact-number 24/7
+                  .impact-label Support Available
+
+              .impact-testimonial
+                .testimonial-content
+                  p "Young4ChickS transformed my life. From unemployment to running a successful poultry business in just 8 months. The support system is incredible!"
+                .testimonial-author
+                  .author-name Sarah Nakato
+                  .author-title Returning Farmer, Kampala

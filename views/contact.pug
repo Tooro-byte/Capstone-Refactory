@@ -1,0 +1,337 @@
+extends layout 
+block content
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Contact Us - Young4Chicks | Get in Touch with Uganda's Premier Poultry Program
+    link(rel="stylesheet", href="/Styles/contact.css")
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap", rel="stylesheet")
+    link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css", rel="stylesheet")
+  
+  body
+    //-Hero Section
+    section.hero
+      .hero-overlay
+      .hero-content
+        .container
+          .hero-text
+            h1.hero-title Ready to Transform Your Future?
+            p.hero-subtitle Get in touch with Young4ChickS and start your journey to agricultural success
+            .hero-stats
+              .stat-item
+                i.fas.fa-clock
+                span 24/7 Support
+              .stat-item
+                i.fas.fa-phone-alt
+                span 3 Dedicated Lines
+              .stat-item
+                i.fas.fa-map-marker-alt
+                span Central Uganda
+          
+          .hero-contact-preview
+            .quick-contact
+              .contact-item
+                .contact-icon
+                  i.fas.fa-phone
+                .contact-info
+                  span Primary Line
+                  strong +256 XXX XXX XXX
+              .contact-item
+                .contact-icon
+                  i.fas.fa-envelope
+                .contact-info
+                  span Email Us
+                  strong info@young4chicks.ug
+              .contact-item
+                .contact-icon
+                  i.fas.fa-clock
+                .contact-info
+                  span Office Hours
+                  strong Mon-Sat: 8AM-6PM
+
+    //-Main Content
+    main.main-content
+      .container
+
+        //-Contact Options Section
+        section.contact-options
+          h2.section-title Multiple Ways to Reach Us
+          p.section-subtitle Choose the method that works best for you
+          
+          .contact-grid
+            .contact-method.primary-method
+              .method-icon
+                i.fas.fa-headset
+              .method-content
+                h3 Call Our Sales Team
+                p Speak directly with our experienced sales representatives who understand your needs
+                .method-details
+                  .detail-item
+                    i.fas.fa-users
+                    span 3 Dedicated Representatives
+                  .detail-item
+                    i.fas.fa-language
+                    span English & Luganda Support
+                  .detail-item
+                    i.fas.fa-clock
+                    span Average Wait: 30 seconds
+                .method-action
+                  a.contact-btn.primary(href="tel:+256XXXXXXX")
+                    i.fas.fa-phone
+                    span Call Now
+                  span.availability Available Now
+
+            .contact-method.secondary-method
+              .method-icon
+                i.fas.fa-envelope-open
+              .method-content
+                h3 Email Support
+                p Send us detailed inquiries and receive comprehensive responses within 24 hours
+                .method-details
+                  .detail-item
+                    i.fas.fa-reply
+                    span 24-hour Response Time
+                  .detail-item
+                    i.fas.fa-file-alt
+                    span Detailed Documentation
+                  .detail-item
+                    i.fas.fa-archive
+                    span Email Thread History
+                .method-action
+                  a.contact-btn.secondary(href="mailto:info@young4chicks.ug")
+                    i.fas.fa-envelope
+                    span Send Email
+                  span.availability Response within 24hrs
+
+            .contact-method.featured-method
+              .method-icon
+                i.fas.fa-map-marked-alt
+              .method-content
+                h3 Visit Our Office
+                p Meet with our team in person for personalized consultation and chick selection
+                .method-details
+                  .detail-item
+                    i.fas.fa-handshake
+                    span Personal Consultation
+                  .detail-item
+                    i.fas.fa-eye
+                    span See Chicks in Person
+                  .detail-item
+                    i.fas.fa-calendar-check
+                    span By Appointment
+                .method-action
+                  a.contact-btn.featured(href="#appointment")
+                    i.fas.fa-calendar-plus
+                    span Book Appointment
+                  span.availability Open Mon-Sat
+
+        //-Contact Form Section
+        section.contact-form-section
+          .form-container
+            .form-header
+              h2 Send Us a Message
+              p Fill out the form below and we'll get back to you as soon as possible
+            
+            form.contact-form#contactForm
+              .form-row
+                .form-group.half-width
+                  label(for="firstName") First Name *
+                  input#firstName(type="text", name="firstName", required, placeholder="Enter your first name")
+                  .field-icon
+                    i.fas.fa-user
+                
+                .form-group.half-width
+                  label(for="lastName") Last Name *
+                  input#lastName(type="text", name="lastName", required, placeholder="Enter your last name")
+                  .field-icon
+                    i.fas.fa-user
+
+              .form-row
+                .form-group.half-width
+                  label(for="email") Email Address *
+                  input#email(type="email", name="email", required, placeholder="your.email@example.com")
+                  .field-icon
+                    i.fas.fa-envelope
+                
+                .form-group.half-width
+                  label(for="phone") Phone Number *
+                  input#phone(type="tel", name="phone", required, placeholder="+256 XXX XXX XXX")
+                  .field-icon
+                    i.fas.fa-phone
+
+              .form-row
+                .form-group.half-width
+                  label(for="age") Age
+                  select#age(name="age")
+                    option(value="") Select your age
+                    option(value="18-20") 18-20 years
+                    option(value="21-25") 21-25 years
+                    option(value="26-30") 26-30 years
+                    option(value="other") Other
+                  .field-icon
+                    i.fas.fa-calendar
+                
+                .form-group.half-width
+                  label(for="location") Location
+                  input#location(type="text", name="location", placeholder="Your district/area")
+                  .field-icon
+                    i.fas.fa-map-marker-alt
+
+              .form-group
+                label(for="inquiryType") Type of Inquiry *
+                select#inquiryType(name="inquiryType", required)
+                  option(value="") Select inquiry type
+                  option(value="chick-request") Request for Chicks
+                  option(value="registration") New Farmer Registration
+                  option(value="feed-order") Feed Order
+                  option(value="general-info") General Information
+                  option(value="training") Training Programs
+                  option(value="technical-support") Technical Support
+                  option(value="other") Other
+                .field-icon
+                  i.fas.fa-list
+
+              .form-group
+                label(for="message") Message *
+                textarea#message(name="message", required, rows="6", placeholder="Tell us about your inquiry, questions, or how we can help you...")
+                .field-icon
+                  i.fas.fa-comment
+
+              .form-options
+                .checkbox-group
+                  input#newsletter(type="checkbox", name="newsletter")
+                  label(for="newsletter") 
+                    span.checkmark
+                    | Subscribe to our newsletter for updates and farming tips
+                
+                .checkbox-group
+                  input#sms(type="checkbox", name="sms")
+                  label(for="sms")
+                    span.checkmark
+                    | Receive SMS notifications about stock updates
+
+              .form-actions
+                button.submit-btn(type="submit")
+                  i.fas.fa-paper-plane
+                  span Send Message
+                .form-note
+                  i.fas.fa-info-circle
+                  span We typically respond within 2-4 hours during business hours
+
+        //-Office Information Section
+        section.office-info
+          .info-grid
+            .office-card.main-office
+              .office-header
+                h3
+                  i.fas.fa-building
+                  span Main Office
+                .office-status.open
+                  i.fas.fa-circle
+                  span Open Now
+              
+              .office-details
+                .detail-row
+                  .detail-icon
+                    i.fas.fa-map-marker-alt
+                  .detail-content
+                    strong Address
+                    p Parliamentary Building Complex<br>Plot 123, Parliament Avenue<br>Kampala, Central Region
+                
+                .detail-row
+                  .detail-icon
+                    i.fas.fa-clock
+                  .detail-content
+                    strong Business Hours
+                    p Monday - Friday: 8:00 AM - 6:00 PM<br>Saturday: 9:00 AM - 4:00 PM<br>Sunday: Closed
+                
+                .detail-row
+                  .detail-icon
+                    i.fas.fa-phone
+                  .detail-content
+                    strong Phone Numbers
+                    p Primary: +256 XXX XXX XXX<br>Sales: +256 XXX XXX XXY<br>Support: +256 XXX XXX XXZ
+
+            .office-card.distribution-center
+              .office-header
+                h3
+                  i.fas.fa-warehouse
+                  span Distribution Center
+                .office-status.open
+                  i.fas.fa-circle
+                  span Open Now
+              
+              .office-details
+                .detail-row
+                  .detail-icon
+                    i.fas.fa-map-marker-alt
+                  .detail-content
+                    strong Location
+                    p Young4Chicks Poultry Center<br>Mukono District<br>Central Region
+                
+                .detail-row
+                  .detail-icon
+                    i.fas.fa-truck
+                  .detail-content
+                    strong Services
+                    p Chick Collection Point<br>Feed Distribution<br>Farmer Training Center
+                
+                .detail-row
+                  .detail-icon
+                    i.fas.fa-calendar
+                  .detail-content
+                    strong Collection Hours
+                    p Monday - Saturday: 7:00 AM - 5:00 PM<br>Appointments Required<br>Call ahead for availability
+
+        //-FAQ Section
+        section.faq-section
+          h2.section-title Frequently Asked Questions
+          .faq-container
+            .faq-item
+              .faq-question
+                h4 How quickly can I get a response to my inquiry?
+                i.fas.fa-chevron-down
+              .faq-answer
+                p For phone calls, you'll speak with a representative immediately during business hours. Email inquiries are typically responded to within 2-4 hours during business days, and within 24 hours on weekends.
+
+            .faq-item
+              .faq-question
+                h4 Can I visit your facilities without an appointment?
+                i.fas.fa-chevron-down
+              .faq-answer
+                p While our main office welcomes walk-ins during business hours, we highly recommend calling ahead for visits to our distribution center to ensure staff availability and to check chick stock levels.
+
+            .faq-item
+              .faq-question
+                h4 Do you provide support in local languages?
+                i.fas.fa-chevron-down
+              .faq-answer
+                p Yes! Our sales representatives are fluent in both English and Luganda. We understand the importance of clear communication in your preferred language.
+
+            .faq-item
+              .faq-question
+                h4 What information should I have ready when I call?
+                i.fas.fa-chevron-down
+              .faq-answer
+                p Please have your registration details (if already registered), the type and quantity of chicks you're interested in, your location, and your preferred collection date. This helps us serve you more efficiently.
+
+        //-Emergency Contact
+        section.emergency-contact
+          .emergency-banner
+            .emergency-content
+              .emergency-icon
+                i.fas.fa-exclamation-triangle
+              .emergency-text
+                h3 Need Urgent Assistance?
+                p For urgent matters related to chick health, feed emergencies, or critical farming issues
+              .emergency-action
+                a.emergency-btn(href="tel:+256XXXXXXXXX")
+                  i.fas.fa-phone-alt
+                  span Call Emergency Line
+                span.emergency-note Available 24/7 for registered farmers
+
+    //- // Footer
+    //- include ../partials/footer
+
+    //- // Scripts
+    //- script(src="contact.js")

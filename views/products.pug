@@ -1,0 +1,404 @@
+extends layout 
+block content
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Products & Services - Young4ChickS | Quality Chicks & Farmer Education
+    link(rel="stylesheet", href="/Styles/products.css")
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap", rel="stylesheet")
+    link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css", rel="stylesheet")
+  
+  body
+    //-Hero Section
+    section.hero
+      .hero-overlay
+      .hero-content
+        .container
+          h1.hero-title Premium Chicks & Farmer Resources
+          p.hero-subtitle Quality livestock and comprehensive education for Uganda's young farmers
+          .hero-cta
+            a.cta-button(href="#chicks-stock") Browse Chicks
+            a.cta-button.secondary(href="#resources") Education Center
+
+    //-Main Content
+    main.main-content
+      .container
+
+        //-Chicks in Stock Section
+        section#chicks-stock.chicks-section
+          .section-header
+            h2.section-title Chicks Currently in Stock
+            p.section-subtitle Premium quality chicks available for immediate collection
+            .stock-info
+              .info-badge
+                i.fas.fa-tag
+                span Fixed Price: UGx 1,650 per chick
+              .info-badge
+                i.fas.fa-clock
+                span Updated Daily
+              .info-badge
+                i.fas.fa-shield-alt
+                span Quality Guaranteed
+
+          //-Stock Filter
+          .stock-filter
+            .filter-buttons
+              button.filter-btn.active(data-filter="all") All Types
+              button.filter-btn(data-filter="local") Local
+              button.filter-btn(data-filter="broilers") Broilers
+              button.filter-btn(data-filter="exotic") Exotic
+
+          //-Chicks Grid
+          .chicks-grid
+            //-Local Chicks
+            .chick-card(data-category="local")
+              .card-header
+                .chick-image
+                  img(src="/Images/local.jpg", alt="Local Chicks")
+                  .stock-badge.in-stock In Stock
+                .chick-type
+                  h3 Local Chicks
+                  span.breed-info Indigenous Breed
+              
+              .card-body
+                .chick-details
+                  .detail-item
+                    i.fas.fa-calendar-alt
+                    span Ages: 1-6 Days Old
+                  .detail-item
+                    i.fas.fa-heart
+                    span Hardy & Disease Resistant
+                  .detail-item
+                    i.fas.fa-leaf
+                    span Low Maintenance
+                  .detail-item
+                    i.fas.fa-coins
+                    span Best for Beginners
+
+                .age-options
+                  h4 Available Ages:
+                  .age-grid
+                    .age-option
+                      .age-number 1
+                      .age-label Day
+                      .stock-count 150 Available
+                    .age-option
+                      .age-number 2
+                      .age-label Days
+                      .stock-count 120 Available
+                    .age-option
+                      .age-number 3
+                      .age-label Days
+                      .stock-count 95 Available
+                    .age-option
+                      .age-number 4
+                      .age-label Days
+                      .stock-count 80 Available
+                    .age-option
+                      .age-number 5
+                      .age-label Days
+                      .stock-count 65 Available
+                    .age-option
+                      .age-number 6
+                      .age-label Days
+                      .stock-count 45 Available
+
+              .card-footer
+                .price-info
+                  .price UGx 1,650
+                  .price-note per chick
+                button.request-btn(data-chick-type="local")
+                  i.fas.fa-plus-circle
+                  span Request These Chicks
+
+            //-Broiler Chicks
+            .chick-card(data-category="broilers")
+              .card-header
+                .chick-image
+                  img(src="/Images/broiler.jpg", alt="Broiler Chicks")
+                  .stock-badge.in-stock In Stock
+                .chick-type
+                  h3 Broiler Chicks
+                  span.breed-info Fast Growing Meat Birds
+              
+              .card-body
+                .chick-details
+                  .detail-item
+                    i.fas.fa-calendar-alt
+                    span Ages: 1-6 Days Old
+                  .detail-item
+                    i.fas.fa-chart-line
+                    span Rapid Weight Gain
+                  .detail-item
+                    i.fas.fa-drumstick-bite
+                    span Premium Meat Quality
+                  .detail-item
+                    i.fas.fa-clock
+                    span 6-8 Weeks to Market
+
+                .age-options
+                  h4 Available Ages:
+                  .age-grid
+                    .age-option
+                      .age-number 1
+                      .age-label Day
+                      .stock-count 200 Available
+                    .age-option
+                      .age-number 2
+                      .age-label Days
+                      .stock-count 180 Available
+                    .age-option
+                      .age-number 3
+                      .age-label Days
+                      .stock-count 160 Available
+                    .age-option
+                      .age-number 4
+                      .age-label Days
+                      .stock-count 140 Available
+                    .age-option
+                      .age-number 5
+                      .age-label Days
+                      .stock-count 110 Available
+                    .age-option
+                      .age-number 6
+                      .age-label Days
+                      .stock-count 85 Available
+
+              .card-footer
+                .price-info
+                  .price UGx 1,650
+                  .price-note per chick
+                button.request-btn(data-chick-type="broiler")
+                  i.fas.fa-plus-circle
+                  span Request These Chicks
+
+            //-Exotic Chicks
+            .chick-card(data-category="exotic")
+              .card-header
+                .chick-image
+                  img(src="/Images/layers.jpg", alt="Exotic Chicks")
+                  .stock-badge.in-stock In Stock
+                .chick-type
+                  h3 Exotic Chicks
+                  span.breed-info International Breeds
+              
+              .card-body
+                .chick-details
+                  .detail-item
+                    i.fas.fa-calendar-alt
+                    span Ages: 1-6 Days Old
+                  .detail-item
+                    i.fas.fa-star
+                    span Premium Genetics
+                  .detail-item
+                    i.fas.fa-egg
+                    span High Egg Production
+                  .detail-item
+                    i.fas.fa-trophy
+                    span Superior Performance
+
+                .age-options
+                  h4 Available Ages:
+                  .age-grid
+                    .age-option
+                      .age-number 1
+                      .age-label Day
+                      .stock-count 100 Available
+                    .age-option
+                      .age-number 2
+                      .age-label Days
+                      .stock-count 85 Available
+                    .age-option
+                      .age-number 3
+                      .age-label Days
+                      .stock-count 70 Available
+                    .age-option
+                      .age-number 4
+                      .age-label Days
+                      .stock-count 55 Available
+                    .age-option
+                      .age-number 5
+                      .age-label Days
+                      .stock-count 40 Available
+                    .age-option
+                      .age-number 6
+                      .age-label Days
+                      .stock-count 30 Available
+
+              .card-footer
+                .price-info
+                  .price UGx 1,650
+                  .price-note per chick
+                button.request-btn(data-chick-type="exotic")
+                  i.fas.fa-plus-circle
+                  span Request These Chicks
+
+        //-Separator
+        .section-separator
+
+        //-Resources & Education Section
+        section#resources.resources-section
+          .section-header
+            h2.section-title Farmer Education & Resources
+            p.section-subtitle Comprehensive support to ensure your farming success
+            
+          .resources-grid
+            //-Vaccination Resources
+            .resource-card.primary-card
+              .card-icon
+                i.fas.fa-syringe
+              .card-content
+                h3 Vaccination Programs
+                p Complete vaccination schedules and protocols to keep your chicks healthy and productive.
+                .resource-features
+                  span Vaccination Calendar
+                  span Dosage Guidelines
+                  span Local Vet Contacts
+              .card-action
+                a.resource-link(href="/vaccination")
+                  span Learn More
+                  i.fas.fa-arrow-right
+
+            //-Disease Prevention
+            .resource-card.primary-card
+              .card-icon
+                i.fas.fa-shield-virus
+              .card-content
+                h3 Poultry Diseases
+                p Identify, prevent, and treat common poultry diseases with our comprehensive disease management guide.
+                .resource-features
+                  span Disease Identification
+                  span Prevention Methods
+                  span Treatment Options
+              .card-action
+                a.resource-link(href="/diseases")
+                  span Learn More
+                  i.fas.fa-arrow-right
+
+            //-General Education
+            .resource-card.primary-card
+              .card-icon
+                i.fas.fa-graduation-cap
+              .card-content
+                h3 Poultry Education
+                p Master the fundamentals of successful poultry farming with our step-by-step educational modules.
+                .resource-features
+                  span Housing Requirements
+                  span Feeding Guidelines
+                  span Record Keeping
+              .card-action
+                a.resource-link(href="/education")
+                  span Learn More
+                  i.fas.fa-arrow-right
+
+            //-Farmer Training
+            .resource-card.secondary-card
+              .card-icon
+                i.fas.fa-chalkboard-teacher
+              .card-content
+                h3 Farmer Training Programs
+                p Hands-on training sessions and workshops designed specifically for young farmers.
+                .resource-features
+                  span Weekly Workshops
+                  span Practical Sessions
+                  span Certification Programs
+              .card-action
+                a.resource-link(href="/training")
+                  span Join Program
+                  i.fas.fa-arrow-right
+
+            //-Feed Information
+            .resource-card.secondary-card
+              .card-icon
+                i.fas.fa-shopping-bag
+              .card-content
+                h3 Request Feeds
+                p Order quality poultry feeds with flexible payment options. 2 bags included with chick purchases.
+                .resource-features
+                  span Starter Feeds
+                  span Grower Feeds
+                  span Layer Feeds
+              .card-action
+                a.resource-link(href="/feeds")
+                  span Order Feeds
+                  i.fas.fa-arrow-right
+
+            //-Market Information
+            .resource-card.secondary-card
+              .card-icon
+                i.fas.fa-chart-bar
+              .card-content
+                h3 Market Information
+                p Stay updated with current market prices, trends, and opportunities in the poultry industry.
+                .resource-features
+                  span Current Prices
+                  span Market Trends
+                  span Buyer Contacts
+              .card-action
+                a.resource-link(href="/market-info")
+                  span View Market
+                  i.fas.fa-arrow-right
+
+            //-Business Planning
+            .resource-card.featured-card
+              .card-icon
+                i.fas.fa-business-time
+              .card-content
+                h3 Business Planning Tools
+                p Comprehensive business planning resources to help you build a profitable poultry enterprise.
+                .resource-features
+                  span Financial Planning
+                  span Business Templates
+                  span Profitability Calculator
+              .card-action
+                a.resource-link(href="/business-tools")
+                  span Start Planning
+                  i.fas.fa-arrow-right
+
+            //-Support & Consultation
+            .resource-card.featured-card
+              .card-icon
+                i.fas.fa-headset
+              .card-content
+                h3 Expert Consultation
+                p Get personalized advice from experienced poultry farmers and agricultural experts.
+                .resource-features
+                  span One-on-One Sessions
+                  span Phone Support
+                  span Farm Visits
+              .card-action
+                a.resource-link(href="/consultation")
+                  span Book Session
+                  i.fas.fa-arrow-right
+
+            //-Success Stories
+            .resource-card.featured-card
+              .card-icon
+                i.fas.fa-trophy
+              .card-content
+                h3 Success Stories
+                p Learn from successful young farmers who have built thriving poultry businesses with Young4ChickS.
+                .resource-features
+                  span Farmer Profiles
+                  span Case Studies
+                  span Best Practices
+              .card-action
+                a.resource-link(href="/success-stories")
+                  span Read Stories
+                  i.fas.fa-arrow-right
+
+        //-Call to Action Section
+        section.cta-section
+          .cta-container
+            .cta-content
+              h2 Ready to Start Your Poultry Journey?
+              p Join hundreds of young farmers who are building successful businesses with Young4ChickS
+              .cta-buttons
+                a.cta-btn.primary(href="/signup")
+                  i.fas.fa-user-plus
+                  span Register Now
+                a.cta-btn.secondary(href="/contact")
+                  i.fas.fa-phone
+                  span Contact Us
+            .cta-image
+              img(src="/Images/farmer.jpg", alt="Successful Young Farmer")
