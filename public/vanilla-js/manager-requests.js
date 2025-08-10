@@ -1,17 +1,30 @@
 class ManagerRequests {
     constructor() {
+        this.currentPage = 1;
+        this.itemsPerPage = 10;
+        this.filteredRequests = [];
+        this.allRequests = [];
         this.init();
         this.setupEventListeners();
         this.setupSearch();
         this.setupFilters();
         this.setupBulkActions();
         this.setupViewToggle();
+        this.initializeRequests();
     }
 
     init() {
         console.log('Manager Requests page initialized');
         this.showNotification('Requests page loaded successfully', 'success');
         this.updateRequestCounts();
+    }
+
+    initializeRequests() {
+        // Get all request rows and store them
+        const requestRows = document.querySelectorAll('.request-row');
+        this.allRequests = Array.from(requestRows);
+        this.filteredRequests = [...this.allRequests];
+        this.updatePagination();
     }
 
     setupEventListeners() {
@@ -80,6 +93,10 @@ class ManagerRequests {
                 this.handleCheckboxChange();
             }
         });
+
+        // Add global functions for menu actions
+        window.viewRequestDetails = this.viewRequestDetails.bind(this);
+        window.printReceipt = this.printReceipt.bind(this);
     }
 
     setupSearch() {
@@ -105,17 +122,17 @@ class ManagerRequests {
     }
 
     setupBulkActions() {
-        const approveSelectedBtn = document.querySelector('.bulk-btn.approve-selected');
-        const rejectSelectedBtn = document.querySelector('.bulk-btn.reject-selected');
+        const approveRequestBtn = document.getElementById('approveRequest');
+        const rejectRequestBtn = document.getElementById('rejectRequest');
 
-        if (approveSelectedBtn) {
-            approveSelectedBtn.addEventListener('click', () => {
+        if (approveRequestBtn) {
+            approveRequestBtn.addEventListener('click', () => {
                 this.handleBulkApprove();
             });
         }
 
-        if (rejectSelectedBtn) {
-            rejectSelectedBtn.addEventListener('click', () => {
+        if (rejectRequestBtn) {
+            rejectRequestBtn.addEventListener('click', () => {
                 this.handleBulkReject();
             });
         }
@@ -304,7 +321,7 @@ class ManagerRequests {
             });
 
             const data = await response.json();
-
+ 
             if (data.success) {
                 this.showNotification(data.message, 'success');
                 this.updateRequestStatus(requestId, 'canceled');
@@ -347,8 +364,8 @@ class ManagerRequests {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button class="btn-cancel">Cancel</button>
-                            <button class="btn-confirm">Reject Request</button>
+                            <button class="btn-modal-cancel">Cancel</button>
+                            <button class="btn-modal-confirm">Reject Request</button>
                         </div>
                     </div>
                 </div>
@@ -357,8 +374,8 @@ class ManagerRequests {
             document.body.insertAdjacentHTML('beforeend', modalHTML);
             
             const modal = document.getElementById('rejectModal');
-            const cancelBtn = modal.querySelector('.btn-cancel');
-            const confirmBtn = modal.querySelector('.btn-confirm');
+            const cancelBtn = modal.querySelector('.btn-modal-cancel');
+            const confirmBtn = modal.querySelector('.btn-modal-confirm');
             const closeBtn = modal.querySelector('.modal-close');
             const textarea = modal.querySelector('#rejectionReason');
             const reasonBtns = modal.querySelectorAll('.reason-btn');
@@ -415,8 +432,8 @@ class ManagerRequests {
                             <p>${message}</p>
                         </div>
                         <div class="modal-footer">
-                            <button class="btn-cancel">Cancel</button>
-                            <button class="btn-confirm">Confirm</button>
+                            <button class="btn-modal-cancel">Cancel</button>
+                            <button class="btn-modal-confirm">Confirm</button>
                         </div>
                     </div>
                 </div>
@@ -425,8 +442,8 @@ class ManagerRequests {
             document.body.insertAdjacentHTML('beforeend', modalHTML);
             
             const modal = document.getElementById('confirmModal');
-            const cancelBtn = modal.querySelector('.btn-cancel');
-            const confirmBtn = modal.querySelector('.btn-confirm');
+            const cancelBtn = modal.querySelector('.btn-modal-cancel');
+            const confirmBtn = modal.querySelector('.btn-modal-confirm');
             const closeBtn = modal.querySelector('.modal-close');
 
             const closeModal = (confirmed = false) => {
@@ -472,14 +489,42 @@ class ManagerRequests {
                                 <span class="btn-icon">❌</span>
                                 <span>Cancel</span>
                             </button>
+                            <div class="action-menu">
+                                <button class="menu-btn">⋮</button>
+                                <div class="menu-dropdown">
+                                    <a class="menu-item" href="javascript:void(0)" onclick="viewRequestDetails('${requestId}')">View Details</a>
+                                    <a class="menu-item" href="mailto:">Contact Farmer</a>
+                                    <a class="menu-item" href="javascript:void(0)" onclick="printReceipt('${requestId}')">Print Receipt</a>
+                                </div>
+                            </div>
                         </div>
                     `;
                     break;
                 case 'dispatched':
-                    actionsHTML = '<div class="status-text">✅ Completed</div>';
+                    actionsHTML = `
+                        <div class="status-text completed">✅ Completed</div>
+                        <div class="action-menu">
+                            <button class="menu-btn">⋮</button>
+                            <div class="menu-dropdown">
+                                <a class="menu-item" href="javascript:void(0)" onclick="viewRequestDetails('${requestId}')">View Details</a>
+                                <a class="menu-item" href="mailto:">Contact Farmer</a>
+                                <a class="menu-item" href="javascript:void(0)" onclick="printReceipt('${requestId}')">Print Receipt</a>
+                            </div>
+                        </div>
+                    `;
                     break;
                 case 'canceled':
-                    actionsHTML = '<div class="status-text">❌ Canceled</div>';
+                    actionsHTML = `
+                        <div class="status-text canceled">❌ Canceled</div>
+                        <div class="action-menu">
+                            <button class="menu-btn">⋮</button>
+                            <div class="menu-dropdown">
+                                <a class="menu-item" href="javascript:void(0)" onclick="viewRequestDetails('${requestId}')">View Details</a>
+                                <a class="menu-item" href="mailto:">Contact Farmer</a>
+                                <a class="menu-item" href="javascript:void(0)" onclick="printReceipt('${requestId}')">Print Receipt</a>
+                            </div>
+                        </div>
+                    `;
                     if (rejectionReason) {
                         const statusCell = requestRow.querySelector('.status-cell');
                         if (statusCell) {
@@ -533,13 +578,17 @@ class ManagerRequests {
         const requestRows = document.querySelectorAll('.request-row');
         const requestCards = document.querySelectorAll('.request-card');
         const searchLower = searchTerm.toLowerCase();
+        let visibleCount = 0;
 
         // Filter table rows
         requestRows.forEach(row => {
             const text = row.textContent.toLowerCase();
-            if (text.includes(searchLower)) {
+            const isVisible = text.includes(searchLower);
+            
+            if (isVisible) {
                 row.style.display = '';
                 row.classList.remove('filtered-out');
+                visibleCount++;
             } else {
                 row.style.display = 'none';
                 row.classList.add('filtered-out');
@@ -549,7 +598,9 @@ class ManagerRequests {
         // Filter cards
         requestCards.forEach(card => {
             const text = card.textContent.toLowerCase();
-            if (text.includes(searchLower)) {
+            const isVisible = text.includes(searchLower);
+            
+            if (isVisible) {
                 card.style.display = '';
                 card.classList.remove('filtered-out');
             } else {
@@ -558,19 +609,23 @@ class ManagerRequests {
             }
         });
 
-        this.updateFilteredCount();
+        this.updateFilteredCount(visibleCount);
     }
 
     filterByStatus(status) {
         const requestRows = document.querySelectorAll('.request-row');
         const requestCards = document.querySelectorAll('.request-card');
+        let visibleCount = 0;
 
         // Filter table rows
         requestRows.forEach(row => {
             const rowStatus = row.dataset.status;
-            if (status === 'all' || rowStatus === status) {
+            const isVisible = status === 'all' || rowStatus === status;
+            
+            if (isVisible) {
                 row.style.display = '';
                 row.classList.remove('status-filtered');
+                visibleCount++;
             } else {
                 row.style.display = 'none';
                 row.classList.add('status-filtered');
@@ -580,7 +635,9 @@ class ManagerRequests {
         // Filter cards
         requestCards.forEach(card => {
             const cardStatus = card.dataset.status;
-            if (status === 'all' || cardStatus === status) {
+            const isVisible = status === 'all' || cardStatus === status;
+            
+            if (isVisible) {
                 card.style.display = '';
                 card.classList.remove('status-filtered');
             } else {
@@ -589,45 +646,79 @@ class ManagerRequests {
             }
         });
 
-        this.updateFilteredCount();
+        this.updateFilteredCount(visibleCount);
     }
 
-    updateFilteredCount() {
-        const visibleRows = document.querySelectorAll('.request-row:not([style*="display: none"])');
-        const totalCount = document.querySelector('.total-count');
-        if (totalCount) {
-            totalCount.textContent = `(${visibleRows.length} showing)`;
+    updateFilteredCount(count = null) {
+        if (count === null) {
+            const visibleRows = document.querySelectorAll('.request-row:not([style*="display: none"])');
+            count = visibleRows.length;
+        }
+        
+        const totalCountElement = document.querySelector('.total-count');
+        const showingCountElement = document.getElementById('showingCount');
+        
+        if (totalCountElement) {
+            totalCountElement.textContent = `(${count} showing)`;
+        }
+        
+        if (showingCountElement) {
+            showingCountElement.textContent = count;
+        }
+    }
+
+    updatePagination() {
+        const totalCount = this.filteredRequests.length;
+        const totalPages = Math.ceil(totalCount / this.itemsPerPage);
+        
+        const showingCountElement = document.getElementById('showingCount');
+        const totalCountElement = document.getElementById('totalCount');
+        
+        if (showingCountElement) {
+            const startIndex = (this.currentPage - 1) * this.itemsPerPage + 1;
+            const endIndex = Math.min(this.currentPage * this.itemsPerPage, totalCount);
+            showingCountElement.textContent = totalCount > 0 ? `${startIndex}-${endIndex}` : '0';
+        }
+        
+        if (totalCountElement) {
+            totalCountElement.textContent = totalCount;
         }
     }
 
     handleSelectAll(checked) {
-        const checkboxes = document.querySelectorAll('.request-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = checked;
-            const row = checkbox.closest('.request-row');
-            if (row) {
-                row.classList.toggle('selected', checked);
+        const visibleCheckboxes = document.querySelectorAll('.request-checkbox:not(.filtered-out):not(.status-filtered)');
+        visibleCheckboxes.forEach(checkbox => {
+            if (checkbox.closest('.request-row') && !checkbox.closest('.request-row').style.display === 'none') {
+                checkbox.checked = checked;
+                const row = checkbox.closest('.request-row') || checkbox.closest('.request-card');
+                if (row) {
+                    row.classList.toggle('selected', checked);
+                }
             }
         });
         this.updateBulkActionButtons();
     }
 
     handleCheckboxChange() {
-        const checkboxes = document.querySelectorAll('.request-checkbox');
-        const checkedBoxes = document.querySelectorAll('.request-checkbox:checked');
+        const allCheckboxes = document.querySelectorAll('.request-checkbox');
+        const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => {
+            const container = cb.closest('.request-row') || cb.closest('.request-card');
+            return container && container.style.display !== 'none';
+        });
+        const checkedVisibleBoxes = visibleCheckboxes.filter(cb => cb.checked);
         const selectAllCheckbox = document.getElementById('selectAll');
 
         // Update select all checkbox
-        if (selectAllCheckbox) {
-            selectAllCheckbox.checked = checkedBoxes.length === checkboxes.length;
-            selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < checkboxes.length;
+        if (selectAllCheckbox && visibleCheckboxes.length > 0) {
+            selectAllCheckbox.checked = checkedVisibleBoxes.length === visibleCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedVisibleBoxes.length > 0 && checkedVisibleBoxes.length < visibleCheckboxes.length;
         }
 
         // Update row selection
-        checkboxes.forEach(checkbox => {
-            const row = checkbox.closest('.request-row');
-            if (row) {
-                row.classList.toggle('selected', checkbox.checked);
+        allCheckboxes.forEach(checkbox => {
+            const container = checkbox.closest('.request-row') || checkbox.closest('.request-card');
+            if (container) {
+                container.classList.toggle('selected', checkbox.checked);
             }
         });
 
@@ -636,19 +727,17 @@ class ManagerRequests {
 
     updateBulkActionButtons() {
         const checkedBoxes = document.querySelectorAll('.request-checkbox:checked');
-        const approveBtn = document.querySelector('.bulk-btn.approve-selected');
-        const rejectBtn = document.querySelector('.bulk-btn.reject-selected');
+        const approveBtn = document.getElementById('approveRequest');
+        const rejectBtn = document.getElementById('rejectRequest');
 
         const hasSelection = checkedBoxes.length > 0;
         
         if (approveBtn) {
             approveBtn.disabled = !hasSelection;
-            approveBtn.textContent = hasSelection ? `Approve Selected (${checkedBoxes.length})` : 'Approve Selected';
         }
         
         if (rejectBtn) {
             rejectBtn.disabled = !hasSelection;
-            rejectBtn.textContent = hasSelection ? `Reject Selected (${checkedBoxes.length})` : 'Reject Selected';
         }
     }
 
@@ -656,38 +745,93 @@ class ManagerRequests {
         const checkedBoxes = document.querySelectorAll('.request-checkbox:checked');
         if (checkedBoxes.length === 0) return;
 
+        // Filter only pending requests
+        const pendingRequests = Array.from(checkedBoxes).filter(checkbox => {
+            const container = checkbox.closest('.request-row') || checkbox.closest('.request-card');
+            return container && container.dataset.status === 'pending';
+        });
+
+        if (pendingRequests.length === 0) {
+            this.showNotification('No pending requests selected', 'warning');
+            return;
+        }
+
         const confirmed = await this.showConfirmModal(
             'Bulk Approve Requests',
-            `Are you sure you want to approve ${checkedBoxes.length} selected requests?`
+            `Are you sure you want to approve ${pendingRequests.length} selected pending requests?`
         );
         
         if (!confirmed) return;
 
-        this.showNotification(`Processing ${checkedBoxes.length} approvals...`, 'info');
+        this.showNotification(`Processing ${pendingRequests.length} approvals...`, 'info');
 
-        for (const checkbox of checkedBoxes) {
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const checkbox of pendingRequests) {
             const requestId = checkbox.value;
-            const approveBtn = document.querySelector(`[data-request-id="${requestId}"].btn-approve`);
-            if (approveBtn) {
-                await this.handleApproveRequest(approveBtn);
-                // Small delay between requests
-                await new Promise(resolve => setTimeout(resolve, 500));
+            try {
+                const response = await fetch(`/api/requests/${requestId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    this.updateRequestStatus(requestId, 'approved');
+                    successCount++;
+                    checkbox.checked = false; // Uncheck after processing
+                } else {
+                    errorCount++;
+                    console.error(`Failed to approve request ${requestId}:`, data.message);
+                }
+            } catch (error) {
+                errorCount++;
+                console.error(`Error approving request ${requestId}:`, error);
             }
+            
+            // Small delay between requests to avoid overwhelming the server
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        this.showNotification('Bulk approval completed', 'success');
+        this.updateRequestCounts();
+        this.updateBulkActionButtons();
+        
+        if (successCount > 0) {
+            this.showNotification(`Successfully approved ${successCount} requests`, 'success');
+        }
+        if (errorCount > 0) {
+            this.showNotification(`Failed to approve ${errorCount} requests`, 'error');
+        }
     }
 
     async handleBulkReject() {
         const checkedBoxes = document.querySelectorAll('.request-checkbox:checked');
         if (checkedBoxes.length === 0) return;
 
-        const reason = await this.showRejectModal('Multiple Farmers');
+        // Filter only pending requests
+        const pendingRequests = Array.from(checkedBoxes).filter(checkbox => {
+            const container = checkbox.closest('.request-row') || checkbox.closest('.request-card');
+            return container && container.dataset.status === 'pending';
+        });
+
+        if (pendingRequests.length === 0) {
+            this.showNotification('No pending requests selected', 'warning');
+            return;
+        }
+
+        const reason = await this.showRejectModal(`${pendingRequests.length} Farmers`);
         if (!reason) return;
 
-        this.showNotification(`Processing ${checkedBoxes.length} rejections...`, 'info');
+        this.showNotification(`Processing ${pendingRequests.length} rejections...`, 'info');
 
-        for (const checkbox of checkedBoxes) {
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const checkbox of pendingRequests) {
             const requestId = checkbox.value;
             try {
                 const response = await fetch(`/api/requests/${requestId}/reject`, {
@@ -702,8 +846,14 @@ class ManagerRequests {
                 const data = await response.json();
                 if (data.success) {
                     this.updateRequestStatus(requestId, 'canceled', reason);
+                    successCount++;
+                    checkbox.checked = false; // Uncheck after processing
+                } else {
+                    errorCount++;
+                    console.error(`Failed to reject request ${requestId}:`, data.message);
                 }
             } catch (error) {
+                errorCount++;
                 console.error(`Error rejecting request ${requestId}:`, error);
             }
             
@@ -712,7 +862,14 @@ class ManagerRequests {
         }
 
         this.updateRequestCounts();
-        this.showNotification('Bulk rejection completed', 'success');
+        this.updateBulkActionButtons();
+        
+        if (successCount > 0) {
+            this.showNotification(`Successfully rejected ${successCount} requests`, 'success');
+        }
+        if (errorCount > 0) {
+            this.showNotification(`Failed to reject ${errorCount} requests`, 'error');
+        }
     }
 
     toggleView(view) {
@@ -737,6 +894,8 @@ class ManagerRequests {
 
     toggleActionMenu(button) {
         const menu = button.nextElementSibling;
+        if (!menu) return;
+        
         const isOpen = menu.style.display === 'block';
         
         // Close all menus first
@@ -753,6 +912,16 @@ class ManagerRequests {
         menus.forEach(menu => {
             menu.style.display = 'none';
         });
+    }
+
+    viewRequestDetails(requestId) {
+        this.showNotification('Request details feature coming soon!', 'info');
+        console.log('View details for request:', requestId);
+    }
+
+    printReceipt(requestId) {
+        this.showNotification('Print receipt feature coming soon!', 'info');
+        console.log('Print receipt for request:', requestId);
     }
 
     showApprovalAnimation(farmerName) {
@@ -829,9 +998,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.managerRequests = new ManagerRequests();
 });
 
-// Add CSS for additional styles
+// Enhanced CSS for better responsiveness and styling
 const additionalStyles = document.createElement('style');
 additionalStyles.textContent = `
+    /* Modal Styling Improvements */
     .reject-modal-overlay,
     .confirm-modal-overlay {
         position: fixed;
@@ -839,224 +1009,374 @@ additionalStyles.textContent = `
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.6);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 2000;
         animation: fadeIn 0.3s ease;
+        backdrop-filter: blur(4px);
     }
     
     .reject-modal,
     .confirm-modal {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         max-width: 500px;
         width: 90%;
-        animation: modalSlideIn 0.3s ease;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     
     .modal-header {
-        padding: 20px 20px 0;
+        padding: 24px 24px 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border-bottom: 1px solid #f3f4f6;
+        margin-bottom: 20px;
     }
     
     .modal-header h3 {
         margin: 0;
         color: #1f2937;
+        font-size: 20px;
+        font-weight: 600;
     }
     
     .modal-close {
         background: none;
         border: none;
-        font-size: 24px;
+        font-size: 28px;
         cursor: pointer;
-        opacity: 0.5;
-        transition: opacity 0.2s;
+        opacity: 0.6;
+        transition: all 0.3s ease;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
     }
     
     .modal-close:hover {
         opacity: 1;
+        background: #f3f4f6;
     }
     
     .modal-body {
-        padding: 20px;
+        padding: 0 24px 20px;
     }
     
     .modal-body label {
         display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
+        margin-bottom: 12px;
+        font-weight: 600;
         color: #374151;
+        font-size: 15px;
     }
     
     .modal-body textarea {
         width: 100%;
-        padding: 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
+        padding: 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
         resize: vertical;
         font-family: inherit;
         font-size: 14px;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        min-height: 100px;
     }
     
     .modal-body textarea:focus {
         outline: none;
         border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
     
     .quick-reasons {
-        margin-top: 16px;
+        margin-top: 20px;
     }
     
     .quick-reasons p {
-        font-size: 12px;
-        color: #64748b;
-        margin-bottom: 8px;
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 12px;
+        font-weight: 500;
     }
     
     .reason-btn {
         display: inline-block;
-        padding: 4px 8px;
-        margin: 2px 4px 2px 0;
-        background: #f3f4f6;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        font-size: 12px;
+        padding: 8px 16px;
+        margin: 4px 8px 4px 0;
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 13px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
+        font-weight: 500;
     }
     
     .reason-btn:hover {
-        background: #e5e7eb;
-        border-color: #9ca3af;
+        background: #f3f4f6;
+        border-color: #3b82f6;
+        transform: translateY(-1px);
+    }
+    
+    .reason-btn:active {
+        transform: translateY(0);
     }
     
     .modal-footer {
-        padding: 0 20px 20px;
+        padding: 20px 24px 24px;
         display: flex;
-        gap: 12px;
+        gap: 16px;
         justify-content: flex-end;
+        border-top: 1px solid #f3f4f6;
+        margin-top: 20px;
     }
     
-    .btn-cancel, .btn-confirm {
-        padding: 10px 20px;
-        border-radius: 6px;
+    .btn-modal-cancel, 
+    .btn-modal-confirm {
+        padding: 12px 24px;
+        border-radius: 10px;
         border: none;
         cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        min-width: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
-    .btn-cancel {
-        background: #f3f4f6;
+    .btn-modal-cancel {
+        background: #f9fafb;
         color: #374151;
+        border: 2px solid #e5e7eb;
     }
     
-    .btn-cancel:hover {
-        background: #e5e7eb;
+    .btn-modal-cancel:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+        transform: translateY(-1px);
     }
     
-    .btn-confirm {
+    .btn-modal-confirm {
         background: #ef4444;
         color: white;
+        border: 2px solid #ef4444;
     }
     
-    .btn-confirm:hover {
+    .btn-modal-confirm:hover {
         background: #dc2626;
+        border-color: #dc2626;
+        transform: translateY(-1px);
     }
     
+    .btn-modal-cancel:active,
+    .btn-modal-confirm:active {
+        transform: translateY(0);
+    }
+    
+    /* Status Update Animations */
     .status-updated {
-        background: #f0f9ff !important;
-        animation: statusUpdatePulse 1s ease;
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+        animation: statusUpdatePulse 1.5s ease;
+        border: 2px solid #0ea5e9;
     }
     
     @keyframes statusUpdatePulse {
-        0%, 100% { background: #f0f9ff; }
-        50% { background: #dbeafe; }
+        0% { 
+            background: #f0f9ff;
+            transform: scale(1);
+        }
+        50% { 
+            background: #e0f2fe;
+            transform: scale(1.02);
+        }
+        100% { 
+            background: #f0f9ff;
+            transform: scale(1);
+        }
     }
     
+    /* Number Animation */
     .number-updating {
-        opacity: 0.5;
-        transform: scale(0.95);
-        transition: all 0.3s ease;
+        opacity: 0.6;
+        transform: scale(0.9);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     
     .number-updated {
         color: #10b981;
-        transform: scale(1.05);
-        transition: all 0.3s ease;
+        transform: scale(1.1);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
     }
     
+    /* Notification Improvements */
     .requests-notification {
         position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
+        top: 24px;
+        right: 24px;
+        z-index: 3000;
         background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        min-width: 300px;
-        animation: slideInRight 0.3s ease;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        min-width: 320px;
+        animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid #e5e7eb;
     }
     
     .requests-notification.success {
         border-left: 4px solid #10b981;
+        background: linear-gradient(135deg, #ffffff, #f0fdf4);
     }
     
     .requests-notification.error {
         border-left: 4px solid #ef4444;
+        background: linear-gradient(135deg, #ffffff, #fef2f2);
     }
     
     .requests-notification.warning {
         border-left: 4px solid #f59e0b;
+        background: linear-gradient(135deg, #ffffff, #fffbeb);
     }
     
     .requests-notification.info {
         border-left: 4px solid #3b82f6;
+        background: linear-gradient(135deg, #ffffff, #eff6ff);
     }
     
     .notification-content {
         display: flex;
-        align-items: center;
-        padding: 16px;
-        gap: 12px;
+        align-items: flex-start;
+        padding: 20px;
+        gap: 16px;
     }
     
     .notification-icon {
-        font-size: 20px;
+        font-size: 24px;
+        flex-shrink: 0;
+        margin-top: 2px;
     }
     
     .notification-message {
         flex: 1;
         font-weight: 500;
+        color: #374151;
+        font-size: 15px;
+        line-height: 1.5;
     }
     
     .notification-close {
         background: none;
         border: none;
-        font-size: 18px;
+        font-size: 20px;
         cursor: pointer;
-        opacity: 0.5;
-        transition: opacity 0.2s;
+        opacity: 0.6;
+        transition: all 0.3s ease;
+        padding: 4px 8px;
+        border-radius: 6px;
+        flex-shrink: 0;
     }
     
     .notification-close:hover {
         opacity: 1;
+        background: rgba(0, 0, 0, 0.05);
     }
     
     .notification-fade-out {
-        animation: slideOutRight 0.3s ease forwards;
+        animation: slideOutRight 0.4s ease forwards;
     }
     
+    /* Menu Dropdown Improvements */
+    .menu-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        min-width: 160px;
+        z-index: 1000;
+        display: none;
+        animation: menuSlideIn 0.2s ease;
+    }
+    
+    .menu-item {
+        display: block;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 500;
+        border-bottom: 1px solid #f3f4f6;
+        transition: all 0.2s ease;
+    }
+    
+    .menu-item:last-child {
+        border-bottom: none;
+    }
+    
+    .menu-item:hover {
+        background: #f9fafb;
+        color: #1f2937;
+        transform: translateX(4px);
+    }
+    
+    /* Approval Animation Enhancement */
+    .approval-animation-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 4000;
+        animation: approvalAnimation 3.5s ease forwards;
+    }
+    
+    .approval-success-animation {
+        background: linear-gradient(135deg, #ffffff, #f0fdf4);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        border: 3px solid #10b981;
+        backdrop-filter: blur(10px);
+    }
+    
+    .success-icon {
+        font-size: 56px;
+        margin-bottom: 20px;
+        animation: bounce 0.6s ease infinite alternate;
+    }
+    
+    .success-details h4 {
+        color: #10b981;
+        margin: 0 0 16px 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .success-details p {
+        margin: 8px 0;
+        color: #374151;
+        font-size: 16px;
+        font-weight: 500;
+    }
+    
+    /* Enhanced Animations */
     @keyframes slideInRight {
         from {
-            transform: translateX(100%);
+            transform: translateX(120%);
             opacity: 0;
         }
         to {
@@ -1071,7 +1391,7 @@ additionalStyles.textContent = `
             opacity: 1;
         }
         to {
-            transform: translateX(100%);
+            transform: translateX(120%);
             opacity: 0;
         }
     }
@@ -1083,7 +1403,18 @@ additionalStyles.textContent = `
     
     @keyframes modalSlideIn {
         from {
-            transform: translateY(-50px);
+            transform: translateY(-60px) scale(0.9);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes menuSlideIn {
+        from {
+            transform: translateY(-10px);
             opacity: 0;
         }
         to {
@@ -1092,58 +1423,136 @@ additionalStyles.textContent = `
         }
     }
     
-    .approval-animation-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 3000;
-        animation: approvalAnimation 3s ease forwards;
-    }
-    
-    .approval-success-animation {
-        background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        text-align: center;
-        border: 2px solid #10b981;
-    }
-    
-    .success-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-    }
-    
-    .success-details h4 {
-        color: #10b981;
-        margin: 0 0 12px 0;
-        font-size: 20px;
-    }
-    
-    .success-details p {
-        margin: 6px 0;
-        color: #374151;
+    @keyframes bounce {
+        from { transform: translateY(0); }
+        to { transform: translateY(-10px); }
     }
     
     @keyframes approvalAnimation {
         0% {
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.8);
+            transform: translate(-50%, -50%) scale(0.7) rotate(-10deg);
         }
         20% {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.05);
+            transform: translate(-50%, -50%) scale(1.1) rotate(2deg);
         }
         80% {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
         }
         100% {
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.9);
+            transform: translate(-50%, -50%) scale(0.8) rotate(5deg);
         }
     }
+    
+    /* Loading State Improvements */
+    .loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+    
+    .loading span {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Responsive Improvements */
+    @media (max-width: 768px) {
+        .reject-modal,
+        .confirm-modal {
+            width: 95%;
+            margin: 16px;
+        }
+        
+        .modal-header {
+            padding: 20px 20px 0;
+        }
+        
+        .modal-body {
+            padding: 0 20px 16px;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px 20px;
+            flex-direction: column-reverse;
+        }
+        
+        .btn-modal-cancel,
+        .btn-modal-confirm {
+            width: 100%;
+            margin: 4px 0;
+        }
+        
+        .requests-notification {
+            right: 16px;
+            left: 16px;
+            min-width: auto;
+        }
+        
+        .approval-success-animation {
+            padding: 30px 20px;
+        }
+        
+        .success-icon {
+            font-size: 48px;
+        }
+        
+        .success-details h4 {
+            font-size: 20px;
+        }
+        
+        .success-details p {
+            font-size: 14px;
+        }
+    }
+    
+    /* Table Row Selection */
+    .request-row.selected,
+    .request-card.selected {
+        background: rgba(59, 130, 246, 0.05);
+        border-color: #3b82f6;
+    }
+    
+    /* Improved Status Text */
+    .status-text.completed {
+        color: #10b981;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .status-text.canceled {
+        color: #ef4444;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    /* Better Button Hover Effects */
+    .btn-approve:hover,
+    .btn-dispatch:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-reject:hover,
+    .btn-cancel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    .menu-btn:hover {
+        background: #f3f4f6;
+        border-radius: 4px;
+    }
 `;
-sss
+
 document.head.appendChild(additionalStyles);

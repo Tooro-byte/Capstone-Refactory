@@ -38,13 +38,15 @@ html(lang="en")
               li.nav-item
                 a.nav-link.active(href="/") Home
               li.nav-item
-                a.nav-link(href="/about") About Us
+                a.nav-link(href="/reports") Reports 
               li.nav-item
                 a.nav-link(href="/products") Products
               li.nav-item
-                a.btn.btn-success.ms-3(href="/login") Login
+                a.btn.btn-success.ms-3(href="/messages") Messages 
               li.nav-item
-                a.btn.btn-outline-primary.ms-2(href="/signup") Register
+                a.btn.btn-outline-primary.ms-2(href="/signup") Register Farmer 
+              li.nav-item
+                a.btn.btn-success.ms-3(href="/messages") Returned 
 
     //- Page content block - this is where the main content of child templates goes
     block content
@@ -53,20 +55,19 @@ html(lang="en")
     div#confirmationModal.modal.fade(tabindex='-1', aria-labelledby='modalLabel', aria-hidden='true')
       .modal-dialog.modal-dialog-centered
         .modal-content
-          .modal-header
-            h5#modalLabel.modal-title Request Submitted!
-            button.btn-close(type='button', data-bs-dismiss='modal', aria-label='Close')
-          .modal-body
-            p Your chick request has been successfully submitted. We’ll get back to you shortly!
-          .modal-footer
-            button.btn.btn-success(type='button', data-bs-dismiss='modal') OK
+          //- .modal-header
+          //-   h5#modalLabel.modal-title Request Submitted!
+          //-   button.btn-close(type='button', data-bs-dismiss='modal', aria-label='Close')
+          //- .modal-body
+          //-   p Your chick request has been successfully submitted. We’ll get back to you shortly!
+          //- .modal-footer
+          //-   button.btn.btn-success(type='button', data-bs-dismiss='modal') OK
 
-    New block for page-specific modals (like your #addStockModal)
+    //- New block for page-specific modals (like your #addStockModal)
     block modals
 
     //- Bootstrap JS at end of body for performance
     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
-    script(src='/vanilla-js/signup.js')
 
     //- New block for page-specific JavaScript files
     block scripts

@@ -118,6 +118,7 @@ body {
 
 .nav-list {
     list-style: none;
+    
 }
 
 .nav-item {
@@ -133,12 +134,15 @@ body {
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
+    border-radius: 5px;
+    
 }
 
 .nav-link:hover {
-    background: #334155;
-    color: #f1f5f9;
+    background: green;
+    color: blue;
     transform: translateX(4px);
+
 }
 
 .nav-item.active .nav-link {

@@ -4,21 +4,39 @@ block head
   link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css")
   style.
     table {
-      font-family: arial, sans-serif;
+      background: white;
+      font-family: verdana;
       border-collapse: collapse;
       width: 100%;
+      border-radius: 8px;
     }
-    td, th {
-      border: 1px solid #dddddd;
+    td {
+      border: 1px solid purple;
       text-align: left;
       padding: 8px;
+      font-weight: bold;
+      color: black;
     }
-    tr:nth-child(even) {
-      background-color: #dddddd;
+    th{
+      border: 1px solid red;
+      text-align: left;
+      padding: 8px;
+      color: green;
+    }
+    tr:nth-child(6) {
+      background-color: yellow;
+      color: white;
+    }
+    h4{
+      text-align: center;
+      color: red;
+      font-family: arial;
+      margin-top: 25px;
+      margin-bottom: 25px;
     }
 
 block content
-  h2 👨‍🌾Young For Chicks Verified Farmer's List
+  h4 👨‍🌾Young For Chicks-Registered Farmers July-October
   table
     thead
       tr
@@ -48,4 +66,4 @@ block content
               td
                 form(method="POST" action="/deleteuser")
                   input(type="hidden" name="id" value=user._id)
-                  button.btn.btn-danger.btn-block(type="submit") Delete
+                  button.btn.btn-secondary.btn-block(type="submit") Delete

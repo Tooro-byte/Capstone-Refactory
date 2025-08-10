@@ -13,7 +13,7 @@ const {
 router.get("/managerDashBoard", ensureAuthenticated, ensureManager, async (req, res) => {
   try {
     const pendingRequests = await chickRequest.countDocuments({
-      status: "pending",
+      status: "Pending",
     });
     const approvedRequests = await chickRequest.countDocuments({
       status: "approved",
@@ -25,15 +25,21 @@ router.get("/managerDashBoard", ensureAuthenticated, ensureManager, async (req, 
     const users = await User.find();
     const farmers = await User.find({ role: "farmer" });
     const stock = await chickStock.find();
-    const requests = await chickRequest.find().populate("user", "name email");
+    
+    // Get ALL pending requests for dashboard display
+    const requests = await chickRequest.find({ status: "Pending" })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
     
     // Get current manager from session or request user
     const currentManager = req.user || req.session.user;
     
     // Log for debugging
     console.log("Current Manager:", currentManager);
+    console.log("Total pending requests found for dashboard:", requests.length);
+    console.log("Pending requests count from database:", pendingRequests);
     
-    // Calculate total stock
+    // Calculate total stock with better aggregation
     const totalStock = await chickStock.aggregate([
       {
         $group: {
@@ -42,6 +48,16 @@ router.get("/managerDashBoard", ensureAuthenticated, ensureManager, async (req, 
         }
       }
     ]);
+
+    // Calculate stock alerts - stocks below threshold
+    const lowStockThreshold = 150;
+    const stockAlertsQuery = await chickStock.find({
+      number: { $lte: lowStockThreshold }
+    }).lean();
+    
+    // Filter out stocks that are exactly 0 (completely out of stock gets different treatment)
+    const stockAlerts = stockAlertsQuery.filter(stock => stock.number > 0 && stock.number <= lowStockThreshold);
+    const outOfStock = stockAlertsQuery.filter(stock => stock.number === 0);
 
     const chickSales = await chickRequest.aggregate([
       { $match: { status: { $in: ["approved", "dispatched"] } } },
@@ -59,13 +75,17 @@ router.get("/managerDashBoard", ensureAuthenticated, ensureManager, async (req, 
       farmers,
       stock,
       requests,
-      currentManager, // Pass the current manager to the template
+      stockAlerts,
+      outOfStock,
+      currentManager,
       chickSales: chickSales[0] || { totalNumChicks: 0, totalChickSales: 0 },
       totalStock: totalStock[0] || { totalChicks: 0 },
       pendingRequests,
       approvedRequests,
       dispatchedRequests,
       totalNumOfFarmers,
+      currency: "UGX",
+      currencySymbol: "UGX" // Add currency symbol for templates
     });
   } catch (error) {
     console.error("Error in manager dashboard:", error);
@@ -74,14 +94,20 @@ router.get("/managerDashBoard", ensureAuthenticated, ensureManager, async (req, 
   }
 });
 
-router.get("/requests", ensureAuthenticated, ensureManager, async (req, res) => {
+// Manager Requests route - Get ALL requests for management
+router.get("/manageRequests", ensureAuthenticated, ensureManager, async (req, res) => {
   try {
-    const allRequests = await chickRequest.find().populate("user", "name email");
+    // Get ALL requests for management view
+    const allRequests = await chickRequest.find().populate("user", "name email").sort({ createdAt: -1 });
     const currentManager = req.user || req.session.user;
+    
+    console.log("Total requests found for management:", allRequests.length);
     
     res.render("manager-requests", { 
       requests: allRequests,
-      currentManager 
+      currentManager,
+      currency: "UGX",
+      currencySymbol: "UGX"
     });
   } catch (error) {
     console.error("Error fetching all requests for manager:", error);
@@ -94,7 +120,7 @@ router.get("/requests", ensureAuthenticated, ensureManager, async (req, res) => 
 router.get("/api/dashboard-stats", ensureAuthenticated, ensureManager, async (req, res) => {
   try {
     const pendingRequests = await chickRequest.countDocuments({
-      status: "pending",
+      status: "Pending",
     });
     const approvedRequests = await chickRequest.countDocuments({
       status: "approved",
@@ -112,6 +138,15 @@ router.get("/api/dashboard-stats", ensureAuthenticated, ensureManager, async (re
       }
     ]);
 
+    // Calculate stock alerts with proper logic
+    const lowStockThreshold = 150;
+    const stockAlertsQuery = await chickStock.find({
+      number: { $lte: lowStockThreshold }
+    }).lean();
+    
+    const stockAlerts = stockAlertsQuery.filter(stock => stock.number > 0 && stock.number <= lowStockThreshold);
+    const outOfStock = stockAlertsQuery.filter(stock => stock.number === 0);
+
     const chickSales = await chickRequest.aggregate([
       { $match: { status: { $in: ["approved", "dispatched"] } } },
       {
@@ -123,7 +158,11 @@ router.get("/api/dashboard-stats", ensureAuthenticated, ensureManager, async (re
       },
     ]);
 
-    const requests = await chickRequest.find({ status: "pending" }).populate("user", "name email").limit(5);
+    // Get recent pending requests for API response
+    const recentPendingRequests = await chickRequest.find({ status: "Pending" })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 })
+      .limit(5); // Limit for API performance
 
     res.json({
       success: true,
@@ -132,8 +171,14 @@ router.get("/api/dashboard-stats", ensureAuthenticated, ensureManager, async (re
         approvedRequests,
         dispatchedRequests,
         totalStock: totalStock[0] || { totalChicks: 0 },
+        stockAlerts: stockAlerts.length,
+        stockAlertsDetails: stockAlerts,
+        outOfStockCount: outOfStock.length,
+        outOfStockDetails: outOfStock,
         chickSales: chickSales[0] || { totalNumChicks: 0, totalChickSales: 0 },
-        pendingRequestsList: requests
+        pendingRequestsList: recentPendingRequests,
+        currency: "UGX",
+        currencySymbol: "UGX"
       }
     });
   } catch (error) {
@@ -278,7 +323,7 @@ router.post(
       if (!stock || stock.number < order.numChicks) {
         return res.status(400).json({ 
           success: false, 
-          message: "Insufficient stock for this request" 
+          message: `Insufficient stock for this request. Available: ${stock ? stock.number : 0}, Requested: ${order.numChicks}` 
         });
       }
 
@@ -369,7 +414,7 @@ router.post(
 // Helper function to get updated stats
 async function getUpdatedStats() {
   const pendingRequests = await chickRequest.countDocuments({
-    status: "pending",
+    status: "Pending",
   });
   const approvedRequests = await chickRequest.countDocuments({
     status: "approved",
@@ -387,6 +432,15 @@ async function getUpdatedStats() {
     }
   ]);
 
+  // Calculate stock alerts
+  const lowStockThreshold = 150;
+  const stockAlertsQuery = await chickStock.find({
+    number: { $lte: lowStockThreshold }
+  }).lean();
+  
+  const stockAlerts = stockAlertsQuery.filter(stock => stock.number > 0 && stock.number <= lowStockThreshold);
+  const outOfStock = stockAlertsQuery.filter(stock => stock.number === 0);
+
   const chickSales = await chickRequest.aggregate([
     { $match: { status: { $in: ["approved", "dispatched"] } } },
     {
@@ -398,7 +452,12 @@ async function getUpdatedStats() {
     },
   ]);
 
-  const pendingRequestsList = await chickRequest.find({ status: "pending" }).populate("user", "name email").limit(5);
+  // Get pending requests for updated stats
+  const pendingRequestsList = await chickRequest.find({ status: "Pending" })
+    .populate("user", "name email")
+    .sort({ createdAt: -1 })
+    .limit(5);
+    
   const stock = await chickStock.find();
 
   return {
@@ -406,9 +465,15 @@ async function getUpdatedStats() {
     approvedRequests,
     dispatchedRequests,
     totalStock: totalStock[0] || { totalChicks: 0 },
+    stockAlerts: stockAlerts.length,
+    stockAlertsDetails: stockAlerts,
+    outOfStockCount: outOfStock.length,
+    outOfStockDetails: outOfStock,
     chickSales: chickSales[0] || { totalNumChicks: 0, totalChickSales: 0 },
     pendingRequestsList,
-    stock
+    stock,
+    currency: "UGX",
+    currencySymbol: "UGX"
   };
 }
 
@@ -416,15 +481,16 @@ async function getUpdatedStats() {
 router.get("/profile", ensureAuthenticated, ensureManager, async (req, res) => {
   try {
     const currentManager = req.user || req.session.user;
-    res.render("manager-profile", { currentManager });
+    res.render("manager-profile", { 
+      currentManager,
+      currency: "UGX",
+      currencySymbol: "UGX"
+    });
   } catch (error) {
     console.error("Error loading manager profile:", error);
     req.flash('error', 'Failed to load profile.');
     res.redirect('/managerDashBoard');
   }
 });
-// Manager Requests route
-router.get("/manageRequests",(req, res)=>{
-  res.render("manager-requests");
-})
+
 module.exports = router;

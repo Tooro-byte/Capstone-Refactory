@@ -33,7 +33,7 @@ block content
           .section-title Request Management
           ul.nav-list
             li.nav-item.active
-              a.nav-link(href="/requests")
+              a.nav-link(href="/manageRequests")
                 .nav-icon ⏳
                 span All Requests
                 .badge.highlight= requests ? requests.length : 0
@@ -130,8 +130,8 @@ block content
               .total-count= `(${requests ? requests.length : 0} total)`
             .header-actions
               .bulk-actions
-                button.bulk-btn.approve-selected(disabled) Approve Selected
-                button.bulk-btn.reject-selected(disabled) Reject Selected
+                button#approveRequest.bulk-btn.approve-request(disabled) Approve Request
+                button#rejectRequest.bulk-btn.reject-request(disabled) Reject Request
               .view-options
                 button.view-btn.active(data-view="table") 📋 Table
                 button.view-btn(data-view="cards") 🗃️ Cards
@@ -152,7 +152,7 @@ block content
                     th Actions
                 tbody#requestsTableBody
                   each request in requests
-                    tr.request-row(data-request-id=request._id, data-status=request.status)
+                    tr.request-row(data-request-id=request._id, data-status=request.status.toLowerCase())
                       td
                         input.request-checkbox(type="checkbox", value=request._id)
                       td.farmer-details
@@ -172,14 +172,14 @@ block content
                         .chick-quantity= `${request.numChicks} chicks`
                         .chick-age= request.chickAge ? `Age: ${request.chickAge} days` : 'Age: Not specified'
                       td.financial-details
-                        .total-cost= `$${request.totalCost || 0}`
-                        .unit-price= `$${request.unitPrice || 0}/chick`
+                        .total-cost= `UGX ${request.totalCost || 0}`
+                        .unit-price= `UGX ${request.unitPrice || 0}/chick`
                         if request.discount
                           .discount= `Discount: ${request.discount}%`
                       td.request-date
-                        .date-requested= new Date(request.requestDate).toLocaleDateString()
-                        .time-requested= new Date(request.requestDate).toLocaleTimeString()
-                        .days-ago= `${Math.floor((Date.now() - new Date(request.requestDate)) / (1000 * 60 * 60 * 24))} days ago`
+                        .date-requested= new Date(request.requestDate || request.createdAt).toLocaleDateString()
+                        .time-requested= new Date(request.requestDate || request.createdAt).toLocaleTimeString()
+                        .days-ago= `${Math.floor((Date.now() - new Date(request.requestDate || request.createdAt)) / (1000 * 60 * 60 * 24))} days ago`
                       td.status-cell
                         .status-badge(class=request.status.toLowerCase())= request.status.toUpperCase()
                         if request.approvedDate && request.status === 'approved'
@@ -188,6 +188,8 @@ block content
                           .status-date= `Canceled: ${new Date(request.canceledDate).toLocaleDateString()}`
                           if request.rejectionReason
                             .rejection-reason= `Reason: ${request.rejectionReason}`
+                        if request.dispatchedDate && request.status === 'dispatched'
+                          .status-date= `Dispatched: ${new Date(request.dispatchedDate).toLocaleDateString()}`
                       td.actions-cell
                         .action-buttons
                           if request.status === 'pending'
@@ -205,15 +207,15 @@ block content
                               .btn-icon ❌
                               span Cancel
                           else if request.status === 'dispatched'
-                            .status-text ✅ Completed
+                            .status-text.completed ✅ Completed
                           else if request.status === 'canceled'
-                            .status-text ❌ Canceled
+                            .status-text.canceled ❌ Canceled
                           .action-menu
                             button.menu-btn ⋮
                             .menu-dropdown
-                              a.menu-item(href=`#`) View Details
-                              a.menu-item(href=`#`) Contact Farmer
-                              a.menu-item(href=`#`) Print Receipt
+                              a.menu-item(href=`javascript:void(0)`, onclick=`viewRequestDetails('${request._id}')`) View Details
+                              a.menu-item(href=`mailto:${request.user ? request.user.email : ''}`) Contact Farmer
+                              a.menu-item(href=`javascript:void(0)`, onclick=`printReceipt('${request._id}')`) Print Receipt
             else
               .empty-requests-state
                 .empty-icon 📋
@@ -227,12 +229,14 @@ block content
             if requests && requests.length > 0
               .cards-grid
                 each request in requests
-                  .request-card(data-request-id=request._id, data-status=request.status)
+                  .request-card(data-request-id=request._id, data-status=request.status.toLowerCase())
                     .card-header
                       .request-info
-                        .request-id= `REQ-${request._id.toString().slice(-6)}`
-                        .request-date= new Date(request.requestDate).toLocaleDateString()
+                        .request-id= `Req-${request._id.toString().slice(-6)}`
+                        .request-date= new Date(request.requestDate || request.createdAt).toLocaleDateString()
                       .status-badge(class=request.status.toLowerCase())= request.status.toUpperCase()
+                      .card-checkbox
+                        input.request-checkbox(type="checkbox", value=request._id)
                     .card-body
                       .farmer-section
                         .section-title Farmer Details
@@ -241,7 +245,7 @@ block content
                       .chick-section
                         .section-title Chick Request
                         .chick-details= `${request.numChicks} ${request.chickType} chicks`
-                        .chick-cost= `Total: $${request.totalCost || 0}`
+                        .chick-cost= `Total: UGX ${request.totalCost || 0}`
                     .card-footer
                       if request.status === 'pending'
                         .card-actions
@@ -249,18 +253,24 @@ block content
                             span ✅ Approve
                           button.btn-reject.card-btn(data-request-id=request._id, data-farmer-name=request.user ? request.user.name : 'Unknown')
                             span ❌ Reject
+                      else if request.status === 'approved'
+                        .card-actions
+                          button.btn-dispatch.card-btn(data-request-id=request._id)
+                            span 🚚 Dispatch
+                          button.btn-cancel.card-btn(data-request-id=request._id)
+                            span ❌ Cancel
                       else
                         .status-info= `Status: ${request.status}`
 
         //- Pagination
         .pagination-container
           .pagination-info
-            span Showing 1-#{requests ? requests.length : 0} of #{requests ? requests.length : 0} requests
+            span Showing <span id="showingCount">#{requests ? requests.length : 0}</span> of <span id="totalCount">#{requests ? requests.length : 0}</span> requests
           .pagination-controls
-            button.page-btn(disabled) ← Previous
+            button.page-btn#prevPage(disabled) ← Previous
             .page-numbers
-              button.page-number.active 1
-            button.page-btn(disabled) Next →
+              button.page-number.active#page1 1
+            button.page-btn#nextPage(disabled) Next →
 
 block append head
   link(rel="stylesheet", href="/Styles/manager-requests.css")

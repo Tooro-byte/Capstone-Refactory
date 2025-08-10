@@ -3,9 +3,7 @@ extends layout
 block content
   .signup-container
     .card
-      h2.signup-title 👨‍🌾 UPDATE YOUNG FARMER
-
-      // Corrected line: Removed the duplicate 'action='
+      h2.signup-title 👨‍🌾 UPDATE YOUNG FARMER PROFILE
       form(method="POST" action="/updateuser?id=" + user._id)
         .form-group
           label(for="name") Full Name
