@@ -20,11 +20,87 @@ class ManagerRequests {
     }
 
     initializeRequests() {
-        // Get all request rows and store them
-        const requestRows = document.querySelectorAll('.request-row');
-        this.allRequests = Array.from(requestRows);
+        // Use broader selectors but with better validation
+        const requestRows = document.querySelectorAll('tr[data-request-id], .request-row, .request-card, tbody tr, .request-item');
+        this.allRequests = Array.from(requestRows).filter(row => this.isValidRequestRow(row));
         this.filteredRequests = [...this.allRequests];
         this.updatePagination();
+        
+        console.log('Found valid requests:', this.allRequests.length);
+        this.allRequests.forEach((row, index) => {
+            const status = this.getRowStatus(row);
+            const requestId = this.getRequestIdFromRow(row);
+            console.log(`Request ${index + 1}: ID = "${requestId}", status = "${status}"`);
+        });
+    }
+
+    // More flexible validation that works with different HTML structures
+    isValidRequestRow(row) {
+        // Check if row has request-related content
+        const hasRequestId = this.getRequestIdFromRow(row) !== null;
+        const hasRequestContent = row.textContent.toLowerCase().includes('chick') || 
+                                 row.querySelector('.farmer-name, .request-details, .btn-approve, .btn-reject') !== null;
+        const hasStatus = this.getRowStatus(row) !== 'unknown';
+        
+        // Exclude header rows and empty rows
+        const isNotHeader = !row.textContent.toLowerCase().includes('farmer name') && 
+                           !row.textContent.toLowerCase().includes('request id') &&
+                           !row.classList.contains('table-header');
+        
+        return (hasRequestId || hasRequestContent) && hasStatus && isNotHeader && row.textContent.trim().length > 10;
+    }
+
+    getRequestIdFromRow(row) {
+        // Try multiple ways to get request ID
+        return row.dataset.requestId || 
+               row.getAttribute('data-request-id') ||
+               row.querySelector('[data-request-id]')?.getAttribute('data-request-id') ||
+               row.querySelector('.btn-approve, .btn-reject')?.getAttribute('data-request-id') ||
+               row.querySelector('a[href*="/requests/"]')?.href?.match(/\/requests\/([^\/\?]+)/)?.[1] ||
+               null;
+    }
+
+    getRowStatus(row) {
+        // Try multiple ways to get the status
+        let status = row.dataset.status || 
+                    row.getAttribute('data-status') ||
+                    row.querySelector('[data-status]')?.dataset.status ||
+                    row.querySelector('[data-status]')?.getAttribute('data-status');
+        
+        // If still no status, try to find it from status badge or text
+        if (!status) {
+            const statusBadge = row.querySelector('.status-badge, .status, [class*="status"], .badge');
+            if (statusBadge) {
+                status = statusBadge.textContent?.trim() ||
+                        statusBadge.dataset.status ||
+                        statusBadge.getAttribute('data-status');
+                
+                // Check class names for status
+                if (!status) {
+                    const classList = Array.from(statusBadge.classList);
+                    status = classList.find(cls => 
+                        ['pending', 'approved', 'dispatched', 'canceled', 'rejected'].includes(cls.toLowerCase())
+                    );
+                }
+            }
+        }
+        
+        // Try to extract from text content as last resort
+        if (!status) {
+            const text = row.textContent.toLowerCase();
+            if (text.includes('pending')) status = 'pending';
+            else if (text.includes('approved')) status = 'approved';
+            else if (text.includes('dispatched')) status = 'dispatched';
+            else if (text.includes('canceled') || text.includes('cancelled')) status = 'canceled';
+            else if (text.includes('rejected')) status = 'rejected';
+        }
+        
+        return status ? status.toLowerCase().trim() : 'unknown';
+    }
+
+    isPendingStatus(status) {
+        const pendingStatuses = ['pending', 'new', 'submitted', 'waiting', 'awaiting'];
+        return pendingStatuses.includes(status?.toLowerCase());
     }
 
     setupEventListeners() {
@@ -148,14 +224,51 @@ class ManagerRequests {
         });
     }
 
+    getRequestIdFromButton(button) {
+        // Try multiple ways to extract request ID
+        let requestId = button.dataset.requestId || 
+                       button.getAttribute('data-request-id') || 
+                       button.closest('[data-request-id]')?.getAttribute('data-request-id');
+        
+        // Try to extract from href if it's a link
+        if (!requestId && button.href) {
+            const match = button.href.match(/\/requests\/([^\/\?]+)/);
+            requestId = match ? match[1] : null;
+        }
+        
+        // Try to find in parent row
+        if (!requestId) {
+            const row = button.closest('tr, .request-row, .request-card, .request-item');
+            if (row) {
+                requestId = this.getRequestIdFromRow(row);
+            }
+        }
+        
+        return requestId;
+    }
+
+    getFarmerNameFromButton(button) {
+        const row = button.closest('tr, .request-row, .request-card, .request-item');
+        if (!row) return 'Farmer';
+        
+        return button.dataset.farmerName || 
+               button.getAttribute('data-farmer-name') || 
+               row.querySelector('.farmer-name')?.textContent?.trim() ||
+               row.querySelector('td:first-child')?.textContent?.trim() ||
+               'Farmer';
+    }
+
     async handleApproveRequest(button) {
-        const requestId = button.dataset.requestId;
-        const farmerName = button.dataset.farmerName;
+        const requestId = this.getRequestIdFromButton(button);
+        const farmerName = this.getFarmerNameFromButton(button);
 
         if (!requestId) {
-            this.showNotification('Invalid request ID', 'error');
+            this.showNotification('Invalid request ID. Please refresh the page and try again.', 'error');
+            console.error('No request ID found on button:', button);
             return;
         }
+
+        console.log('Attempting to approve request:', requestId);
 
         // Show loading state
         const originalText = button.innerHTML;
@@ -168,19 +281,26 @@ class ManagerRequests {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 credentials: 'include'
             });
 
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
+            console.log('Approve response:', data);
 
             if (data.success) {
-                this.showNotification(data.message, 'success');
+                this.showNotification(data.message || `Request approved for ${farmerName}`, 'success');
                 this.updateRequestStatus(requestId, 'approved');
                 this.updateRequestCounts();
                 this.showApprovalAnimation(farmerName);
             } else {
-                this.showNotification(data.message, 'error');
+                this.showNotification(data.message || 'Failed to approve request', 'error');
                 // Restore button state
                 button.innerHTML = originalText;
                 button.disabled = false;
@@ -188,7 +308,7 @@ class ManagerRequests {
             }
         } catch (error) {
             console.error('Error approving request:', error);
-            this.showNotification('Network error. Please try again.', 'error');
+            this.showNotification(`Failed to approve request: ${error.message}`, 'error');
             // Restore button state
             button.innerHTML = originalText;
             button.disabled = false;
@@ -197,42 +317,55 @@ class ManagerRequests {
     }
 
     async handleRejectRequest(button) {
-        const requestId = button.dataset.requestId;
-        const farmerName = button.dataset.farmerName;
+        const requestId = this.getRequestIdFromButton(button);
+        const farmerName = this.getFarmerNameFromButton(button);
 
         if (!requestId) {
-            this.showNotification('Invalid request ID', 'error');
+            this.showNotification('Invalid request ID. Please refresh the page and try again.', 'error');
+            console.error('No request ID found on button:', button);
             return;
         }
 
+        console.log('Attempting to reject request:', requestId);
+
         // Show rejection reason modal
-        const reason = await this.showRejectModal(farmerName);
-        if (!reason) return; // User cancelled
-
-        // Show loading state
-        const originalText = button.innerHTML;
-        button.innerHTML = '<span>⏳ Rejecting...</span>';
-        button.disabled = true;
-        button.classList.add('loading');
-
         try {
+            const reason = await this.showRejectModal(farmerName);
+            if (!reason) {
+                console.log('User cancelled rejection');
+                return; // User cancelled
+            }
+
+            // Show loading state
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span>⏳ Rejecting...</span>';
+            button.disabled = true;
+            button.classList.add('loading');
+
             const response = await fetch(`/api/requests/${requestId}/reject`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 credentials: 'include',
                 body: JSON.stringify({ rejectionReason: reason })
             });
 
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
+            console.log('Reject response:', data);
 
             if (data.success) {
-                this.showNotification(data.message, 'success');
-                this.updateRequestStatus(requestId, 'canceled', reason);
+                this.showNotification(data.message || `Request rejected for ${farmerName}`, 'success');
+                this.updateRequestStatus(requestId, 'rejected', reason);
                 this.updateRequestCounts();
             } else {
-                this.showNotification(data.message, 'error');
+                this.showNotification(data.message || 'Failed to reject request', 'error');
                 // Restore button state
                 button.innerHTML = originalText;
                 button.disabled = false;
@@ -240,21 +373,25 @@ class ManagerRequests {
             }
         } catch (error) {
             console.error('Error rejecting request:', error);
-            this.showNotification('Network error. Please try again.', 'error');
-            // Restore button state
-            button.innerHTML = originalText;
-            button.disabled = false;
-            button.classList.remove('loading');
+            this.showNotification(`Failed to reject request: ${error.message}`, 'error');
+            // Restore button state if it was modified
+            if (button.classList.contains('loading')) {
+                button.innerHTML = button.dataset.originalText || 'Reject';
+                button.disabled = false;
+                button.classList.remove('loading');
+            }
         }
     }
 
     async handleDispatchRequest(button) {
-        const requestId = button.dataset.requestId;
+        const requestId = this.getRequestIdFromButton(button);
 
         if (!requestId) {
-            this.showNotification('Invalid request ID', 'error');
+            this.showNotification('Invalid request ID. Please refresh the page and try again.', 'error');
             return;
         }
+
+        console.log('Attempting to dispatch request:', requestId);
 
         // Show loading state
         const originalText = button.innerHTML;
@@ -267,18 +404,25 @@ class ManagerRequests {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 credentials: 'include'
             });
 
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
+            console.log('Dispatch response:', data);
 
             if (data.success) {
-                this.showNotification(data.message, 'success');
+                this.showNotification(data.message || 'Request dispatched successfully', 'success');
                 this.updateRequestStatus(requestId, 'dispatched');
                 this.updateRequestCounts();
             } else {
-                this.showNotification(data.message, 'error');
+                this.showNotification(data.message || 'Failed to dispatch request', 'error');
                 // Restore button state
                 button.innerHTML = originalText;
                 button.disabled = false;
@@ -286,7 +430,7 @@ class ManagerRequests {
             }
         } catch (error) {
             console.error('Error dispatching request:', error);
-            this.showNotification('Network error. Please try again.', 'error');
+            this.showNotification(`Failed to dispatch request: ${error.message}`, 'error');
             // Restore button state
             button.innerHTML = originalText;
             button.disabled = false;
@@ -295,15 +439,17 @@ class ManagerRequests {
     }
 
     async handleCancelRequest(button) {
-        const requestId = button.dataset.requestId;
+        const requestId = this.getRequestIdFromButton(button);
 
         if (!requestId) {
-            this.showNotification('Invalid request ID', 'error');
+            this.showNotification('Invalid request ID. Please refresh the page and try again.', 'error');
             return;
         }
 
         const confirmed = await this.showConfirmModal('Cancel Request', 'Are you sure you want to cancel this approved request?');
         if (!confirmed) return;
+
+        console.log('Attempting to cancel request:', requestId);
 
         // Show loading state
         const originalText = button.innerHTML;
@@ -316,18 +462,25 @@ class ManagerRequests {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 credentials: 'include'
             });
 
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
- 
+            console.log('Cancel response:', data);
+
             if (data.success) {
-                this.showNotification(data.message, 'success');
+                this.showNotification(data.message || 'Request canceled successfully', 'success');
                 this.updateRequestStatus(requestId, 'canceled');
                 this.updateRequestCounts();
             } else {
-                this.showNotification(data.message, 'error');
+                this.showNotification(data.message || 'Failed to cancel request', 'error');
                 // Restore button state
                 button.innerHTML = originalText;
                 button.disabled = false;
@@ -335,7 +488,7 @@ class ManagerRequests {
             }
         } catch (error) {
             console.error('Error canceling request:', error);
-            this.showNotification('Network error. Please try again.', 'error');
+            this.showNotification(`Failed to cancel request: ${error.message}`, 'error');
             // Restore button state
             button.innerHTML = originalText;
             button.disabled = false;
@@ -345,27 +498,28 @@ class ManagerRequests {
 
     showRejectModal(farmerName) {
         return new Promise((resolve) => {
+            const modalId = 'rejectModal_' + Date.now();
             const modalHTML = `
-                <div class="reject-modal-overlay" id="rejectModal">
+                <div class="reject-modal-overlay" id="${modalId}">
                     <div class="reject-modal">
                         <div class="modal-header">
                             <h3>Reject Request from ${farmerName}</h3>
-                            <button class="modal-close">&times;</button>
+                            <button class="modal-close" type="button">&times;</button>
                         </div>
                         <div class="modal-body">
-                            <label for="rejectionReason">Reason for rejection:</label>
-                            <textarea id="rejectionReason" placeholder="Please provide a clear reason for rejecting this request..." rows="4"></textarea>
+                            <label for="rejectionReason_${modalId}">Reason for rejection:</label>
+                            <textarea id="rejectionReason_${modalId}" placeholder="Please provide a clear reason for rejecting this request..." rows="4"></textarea>
                             <div class="quick-reasons">
                                 <p>Quick reasons:</p>
-                                <button class="reason-btn" data-reason="Insufficient stock available">Insufficient stock</button>
-                                <button class="reason-btn" data-reason="Invalid request details">Invalid details</button>
-                                <button class="reason-btn" data-reason="Farmer not verified">Not verified</button>
-                                <button class="reason-btn" data-reason="Request exceeds limit">Exceeds limit</button>
+                                <button type="button" class="reason-btn" data-reason="Insufficient stock available">Insufficient stock</button>
+                                <button type="button" class="reason-btn" data-reason="Invalid request details">Invalid details</button>
+                                <button type="button" class="reason-btn" data-reason="Farmer not verified">Not verified</button>
+                                <button type="button" class="reason-btn" data-reason="Request exceeds limit">Exceeds limit</button>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button class="btn-modal-cancel">Cancel</button>
-                            <button class="btn-modal-confirm">Reject Request</button>
+                            <button type="button" class="btn-modal-cancel">Cancel</button>
+                            <button type="button" class="btn-modal-confirm">Reject Request</button>
                         </div>
                     </div>
                 </div>
@@ -373,11 +527,11 @@ class ManagerRequests {
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
             
-            const modal = document.getElementById('rejectModal');
+            const modal = document.getElementById(modalId);
             const cancelBtn = modal.querySelector('.btn-modal-cancel');
             const confirmBtn = modal.querySelector('.btn-modal-confirm');
             const closeBtn = modal.querySelector('.modal-close');
-            const textarea = modal.querySelector('#rejectionReason');
+            const textarea = modal.querySelector(`#rejectionReason_${modalId}`);
             const reasonBtns = modal.querySelectorAll('.reason-btn');
 
             // Focus on textarea
@@ -385,7 +539,8 @@ class ManagerRequests {
 
             // Handle quick reason buttons
             reasonBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
                     textarea.value = btn.dataset.reason;
                     textarea.focus();
                 });
@@ -393,47 +548,70 @@ class ManagerRequests {
 
             // Handle modal actions
             const closeModal = (reason = null) => {
-                modal.remove();
+                if (modal && modal.parentNode) {
+                    modal.remove();
+                }
                 resolve(reason);
             };
 
-            cancelBtn.onclick = () => closeModal(null);
-            closeBtn.onclick = () => closeModal(null);
+            // Event listeners
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeModal(null);
+                });
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeModal(null);
+                });
+            }
             
-            confirmBtn.onclick = () => {
-                const reason = textarea.value.trim() || 'No reason provided';
-                closeModal(reason);
-            };
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const reason = textarea.value.trim() || 'No reason provided';
+                    closeModal(reason);
+                });
+            }
 
             // Close on overlay click
-            modal.onclick = (e) => {
-                if (e.target === modal) closeModal(null);
-            };
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(null);
+                }
+            });
 
             // Handle Enter key
-            textarea.onkeydown = (e) => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                    confirmBtn.click();
-                }
-            };
+            if (textarea) {
+                textarea.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        confirmBtn.click();
+                    }
+                });
+            }
         });
     }
 
     showConfirmModal(title, message) {
         return new Promise((resolve) => {
+            const modalId = 'confirmModal_' + Date.now();
             const modalHTML = `
-                <div class="confirm-modal-overlay" id="confirmModal">
+                <div class="confirm-modal-overlay" id="${modalId}">
                     <div class="confirm-modal">
                         <div class="modal-header">
                             <h3>${title}</h3>
-                            <button class="modal-close">&times;</button>
+                            <button class="modal-close" type="button">&times;</button>
                         </div>
                         <div class="modal-body">
                             <p>${message}</p>
                         </div>
                         <div class="modal-footer">
-                            <button class="btn-modal-cancel">Cancel</button>
-                            <button class="btn-modal-confirm">Confirm</button>
+                            <button type="button" class="btn-modal-cancel">Cancel</button>
+                            <button type="button" class="btn-modal-confirm">Confirm</button>
                         </div>
                     </div>
                 </div>
@@ -441,39 +619,71 @@ class ManagerRequests {
 
             document.body.insertAdjacentHTML('beforeend', modalHTML);
             
-            const modal = document.getElementById('confirmModal');
+            const modal = document.getElementById(modalId);
             const cancelBtn = modal.querySelector('.btn-modal-cancel');
             const confirmBtn = modal.querySelector('.btn-modal-confirm');
             const closeBtn = modal.querySelector('.modal-close');
 
             const closeModal = (confirmed = false) => {
-                modal.remove();
+                if (modal && modal.parentNode) {
+                    modal.remove();
+                }
                 resolve(confirmed);
             };
 
-            cancelBtn.onclick = () => closeModal(false);
-            closeBtn.onclick = () => closeModal(false);
-            confirmBtn.onclick = () => closeModal(true);
+            // Event listeners
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeModal(false);
+                });
+            }
 
-            modal.onclick = (e) => {
-                if (e.target === modal) closeModal(false);
-            };
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeModal(false);
+                });
+            }
+
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeModal(true);
+                });
+            }
+
+            // Close on overlay click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(false);
+                }
+            });
         });
     }
 
     updateRequestStatus(requestId, newStatus, rejectionReason = null) {
-        const requestRow = document.querySelector(`[data-request-id="${requestId}"]`);
-        if (!requestRow) return;
+        // Find request row using multiple selectors
+        const requestRow = document.querySelector(`[data-request-id="${requestId}"]`) ||
+                          document.querySelector(`tr[data-id="${requestId}"]`) ||
+                          document.querySelector(`.request-row[data-id="${requestId}"]`) ||
+                          this.allRequests.find(row => this.getRequestIdFromRow(row) === requestId);
+        
+        if (!requestRow) {
+            console.warn(`Could not find request row for ID: ${requestId}`);
+            this.showNotification('Status updated successfully, but page display may be outdated. Please refresh.', 'info');
+            return;
+        }
 
         // Update status badge
-        const statusBadge = requestRow.querySelector('.status-badge');
+        const statusBadge = requestRow.querySelector('.status-badge, .status, .badge, [class*="status"]');
         if (statusBadge) {
             statusBadge.className = `status-badge ${newStatus}`;
             statusBadge.textContent = newStatus.toUpperCase();
         }
 
-        // Update actions
-        const actionsCell = requestRow.querySelector('.actions-cell');
+        // Update actions cell
+        const actionsCell = requestRow.querySelector('.actions-cell, .actions, td:last-child, .request-actions');
         if (actionsCell) {
             let actionsHTML = '';
             
@@ -481,11 +691,11 @@ class ManagerRequests {
                 case 'approved':
                     actionsHTML = `
                         <div class="action-buttons">
-                            <button class="btn-dispatch" data-request-id="${requestId}">
+                            <button class="btn-dispatch btn btn-success" data-request-id="${requestId}">
                                 <span class="btn-icon">🚚</span>
                                 <span>Mark Dispatched</span>
                             </button>
-                            <button class="btn-cancel" data-request-id="${requestId}">
+                            <button class="btn-cancel btn btn-danger" data-request-id="${requestId}">
                                 <span class="btn-icon">❌</span>
                                 <span>Cancel</span>
                             </button>
@@ -513,9 +723,10 @@ class ManagerRequests {
                         </div>
                     `;
                     break;
+                case 'rejected':
                 case 'canceled':
                     actionsHTML = `
-                        <div class="status-text canceled">❌ Canceled</div>
+                        <div class="status-text canceled">❌ ${newStatus === 'rejected' ? 'Rejected' : 'Canceled'}</div>
                         <div class="action-menu">
                             <button class="menu-btn">⋮</button>
                             <div class="menu-dropdown">
@@ -526,7 +737,7 @@ class ManagerRequests {
                         </div>
                     `;
                     if (rejectionReason) {
-                        const statusCell = requestRow.querySelector('.status-cell');
+                        const statusCell = requestRow.querySelector('.status-cell, td:nth-child(5)');
                         if (statusCell) {
                             statusCell.insertAdjacentHTML('beforeend', `
                                 <div class="rejection-reason">Reason: ${rejectionReason}</div>
@@ -540,48 +751,124 @@ class ManagerRequests {
         }
 
         // Update row data attribute
-        requestRow.dataset.status = newStatus;
+        if (requestRow.dataset) {
+            requestRow.dataset.status = newStatus;
+        }
+        requestRow.setAttribute('data-status', newStatus);
 
         // Add animation
         requestRow.classList.add('status-updated');
         setTimeout(() => {
             requestRow.classList.remove('status-updated');
         }, 1000);
+
+        // Re-initialize requests to update our internal arrays
+        this.initializeRequests();
     }
 
     updateRequestCounts() {
-        const allRows = document.querySelectorAll('.request-row');
+        console.log('Updating request counts...');
+        
         const counts = {
             pending: 0,
             approved: 0,
             dispatched: 0,
-            canceled: 0
+            canceled: 0,
+            rejected: 0,
+            total: 0
         };
 
-        allRows.forEach(row => {
-            const status = row.dataset.status;
-            if (counts.hasOwnProperty(status)) {
-                counts[status]++;
+        // Count from our validated requests
+        this.allRequests.forEach((row, index) => {
+            const status = this.getRowStatus(row);
+            const requestId = this.getRequestIdFromRow(row);
+            console.log(`Counting - Request ${index + 1}: ID = "${requestId}", status = "${status}"`);
+            
+            if (status === 'unknown') return;
+            
+            counts.total++;
+            
+            if (this.isPendingStatus(status)) {
+                counts.pending++;
+            } else if (status === 'approved') {
+                counts.approved++;
+            } else if (status === 'dispatched') {
+                counts.dispatched++;
+            } else if (['canceled', 'cancelled', 'rejected'].includes(status)) {
+                counts.canceled++;
+                counts.rejected++; // Some systems separate these
             }
         });
 
+        console.log('Final counts:', counts);
+
         // Update summary cards
-        Object.keys(counts).forEach(status => {
-            const summaryCard = document.querySelector(`.summary-card.${status} .summary-number`);
-            if (summaryCard) {
-                this.animateNumberChange(summaryCard, counts[status]);
+        this.updateCountElement('pending', counts.pending);
+        this.updateCountElement('approved', counts.approved);
+        this.updateCountElement('dispatched', counts.dispatched);
+        this.updateCountElement('canceled', counts.canceled);
+        this.updateCountElement('rejected', counts.rejected);
+        this.updateCountElement('total', counts.total);
+    }
+
+    updateCountElement(status, count) {
+        // Try multiple selector patterns to find count elements
+        const possibleSelectors = [
+            `.summary-card.${status} .summary-number`,
+            `.summary-card.${status} .stat-number`,
+            `.stat-card.${status} .stat-number`,
+            `.card.${status} .number`,
+            `.${status}-card .number`,
+            `.${status}-count`,
+            `#${status}Count`,
+            `[data-status="${status}"] .summary-number`,
+            `[data-status="${status}"] .stat-number`,
+            `[data-status="${status}"] .number`
+        ];
+        
+        let summaryElement = null;
+        for (const selector of possibleSelectors) {
+            try {
+                summaryElement = document.querySelector(selector);
+                if (summaryElement) {
+                    console.log(`Found element for ${status} using selector: ${selector}`);
+                    break;
+                }
+            } catch (e) {
+                // Skip invalid selectors
+                continue;
             }
-        });
+        }
+        
+        // If still not found, try a more flexible approach
+        if (!summaryElement) {
+            const allCards = document.querySelectorAll('.summary-card, .stat-card, .card, [class*="card"]');
+            for (const card of allCards) {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(status.toLowerCase()) || 
+                    card.classList.contains(status) ||
+                    card.dataset.status === status) {
+                    summaryElement = card.querySelector('.summary-number, .stat-number, .number, [class*="number"]');
+                    if (summaryElement) {
+                        console.log(`Found element for ${status} via text matching`);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (summaryElement) {
+            this.animateNumberChange(summaryElement, count);
+        } else {
+            console.warn(`Could not find summary element for status: ${status}`);
+        }
     }
 
     filterRequests(searchTerm) {
-        const requestRows = document.querySelectorAll('.request-row');
-        const requestCards = document.querySelectorAll('.request-card');
         const searchLower = searchTerm.toLowerCase();
         let visibleCount = 0;
 
-        // Filter table rows
-        requestRows.forEach(row => {
+        this.allRequests.forEach(row => {
             const text = row.textContent.toLowerCase();
             const isVisible = text.includes(searchLower);
             
@@ -595,32 +882,23 @@ class ManagerRequests {
             }
         });
 
-        // Filter cards
-        requestCards.forEach(card => {
-            const text = card.textContent.toLowerCase();
-            const isVisible = text.includes(searchLower);
-            
-            if (isVisible) {
-                card.style.display = '';
-                card.classList.remove('filtered-out');
-            } else {
-                card.style.display = 'none';
-                card.classList.add('filtered-out');
-            }
-        });
-
         this.updateFilteredCount(visibleCount);
     }
 
     filterByStatus(status) {
-        const requestRows = document.querySelectorAll('.request-row');
-        const requestCards = document.querySelectorAll('.request-card');
         let visibleCount = 0;
 
-        // Filter table rows
-        requestRows.forEach(row => {
-            const rowStatus = row.dataset.status;
-            const isVisible = status === 'all' || rowStatus === status;
+        this.allRequests.forEach(row => {
+            const rowStatus = this.getRowStatus(row);
+            let isVisible = false;
+            
+            if (status === 'all') {
+                isVisible = true;
+            } else if (status === 'pending' && this.isPendingStatus(rowStatus)) {
+                isVisible = true;
+            } else if (rowStatus === status.toLowerCase()) {
+                isVisible = true;
+            }
             
             if (isVisible) {
                 row.style.display = '';
@@ -632,26 +910,16 @@ class ManagerRequests {
             }
         });
 
-        // Filter cards
-        requestCards.forEach(card => {
-            const cardStatus = card.dataset.status;
-            const isVisible = status === 'all' || cardStatus === status;
-            
-            if (isVisible) {
-                card.style.display = '';
-                card.classList.remove('status-filtered');
-            } else {
-                card.style.display = 'none';
-                card.classList.add('status-filtered');
-            }
-        });
-
         this.updateFilteredCount(visibleCount);
     }
 
     updateFilteredCount(count = null) {
         if (count === null) {
-            const visibleRows = document.querySelectorAll('.request-row:not([style*="display: none"])');
+            const visibleRows = this.allRequests.filter(row => 
+                row.style.display !== 'none' && 
+                !row.classList.contains('filtered-out') && 
+                !row.classList.contains('status-filtered')
+            );
             count = visibleRows.length;
         }
         
@@ -686,37 +954,40 @@ class ManagerRequests {
     }
 
     handleSelectAll(checked) {
-        const visibleCheckboxes = document.querySelectorAll('.request-checkbox:not(.filtered-out):not(.status-filtered)');
+        const visibleCheckboxes = this.allRequests
+            .filter(row => row.style.display !== 'none')
+            .map(row => row.querySelector('.request-checkbox'))
+            .filter(checkbox => checkbox !== null);
+
         visibleCheckboxes.forEach(checkbox => {
-            if (checkbox.closest('.request-row') && !checkbox.closest('.request-row').style.display === 'none') {
-                checkbox.checked = checked;
-                const row = checkbox.closest('.request-row') || checkbox.closest('.request-card');
-                if (row) {
-                    row.classList.toggle('selected', checked);
-                }
+            checkbox.checked = checked;
+            const container = checkbox.closest('tr, .request-row, .request-card, .request-item');
+            if (container) {
+                container.classList.toggle('selected', checked);
             }
         });
+        
         this.updateBulkActionButtons();
     }
 
     handleCheckboxChange() {
-        const allCheckboxes = document.querySelectorAll('.request-checkbox');
-        const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => {
-            const container = cb.closest('.request-row') || cb.closest('.request-card');
-            return container && container.style.display !== 'none';
-        });
-        const checkedVisibleBoxes = visibleCheckboxes.filter(cb => cb.checked);
+        const allVisibleCheckboxes = this.allRequests
+            .filter(row => row.style.display !== 'none')
+            .map(row => row.querySelector('.request-checkbox'))
+            .filter(checkbox => checkbox !== null);
+            
+        const checkedVisibleBoxes = allVisibleCheckboxes.filter(cb => cb.checked);
         const selectAllCheckbox = document.getElementById('selectAll');
 
         // Update select all checkbox
-        if (selectAllCheckbox && visibleCheckboxes.length > 0) {
-            selectAllCheckbox.checked = checkedVisibleBoxes.length === visibleCheckboxes.length;
-            selectAllCheckbox.indeterminate = checkedVisibleBoxes.length > 0 && checkedVisibleBoxes.length < visibleCheckboxes.length;
+        if (selectAllCheckbox && allVisibleCheckboxes.length > 0) {
+            selectAllCheckbox.checked = checkedVisibleBoxes.length === allVisibleCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedVisibleBoxes.length > 0 && checkedVisibleBoxes.length < allVisibleCheckboxes.length;
         }
 
         // Update row selection
-        allCheckboxes.forEach(checkbox => {
-            const container = checkbox.closest('.request-row') || checkbox.closest('.request-card');
+        allVisibleCheckboxes.forEach(checkbox => {
+            const container = checkbox.closest('tr, .request-row, .request-card, .request-item');
             if (container) {
                 container.classList.toggle('selected', checkbox.checked);
             }
@@ -743,13 +1014,22 @@ class ManagerRequests {
 
     async handleBulkApprove() {
         const checkedBoxes = document.querySelectorAll('.request-checkbox:checked');
-        if (checkedBoxes.length === 0) return;
+        console.log(`Total checked boxes: ${checkedBoxes.length}`);
+        
+        if (checkedBoxes.length === 0) {
+            this.showNotification('No requests selected', 'warning');
+            return;
+        }
 
         // Filter only pending requests
         const pendingRequests = Array.from(checkedBoxes).filter(checkbox => {
-            const container = checkbox.closest('.request-row') || checkbox.closest('.request-card');
-            return container && container.dataset.status === 'pending';
+            const container = checkbox.closest('tr, .request-row, .request-card, .request-item');
+            const status = this.getRowStatus(container);
+            console.log(`Checkbox container status: "${status}", isPending: ${this.isPendingStatus(status)}`);
+            return this.isPendingStatus(status);
         });
+
+        console.log(`Pending requests found: ${pendingRequests.length}`);
 
         if (pendingRequests.length === 0) {
             this.showNotification('No pending requests selected', 'warning');
@@ -769,32 +1049,44 @@ class ManagerRequests {
         let errorCount = 0;
 
         for (const checkbox of pendingRequests) {
-            const requestId = checkbox.value;
+            const container = checkbox.closest('tr, .request-row, .request-card, .request-item');
+            const requestId = this.getRequestIdFromRow(container);
+            
+            if (!requestId) {
+                errorCount++;
+                continue;
+            }
+
             try {
                 const response = await fetch(`/api/requests/${requestId}/approve`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     credentials: 'include'
                 });
 
-                const data = await response.json();
-                if (data.success) {
-                    this.updateRequestStatus(requestId, 'approved');
-                    successCount++;
-                    checkbox.checked = false; // Uncheck after processing
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        this.updateRequestStatus(requestId, 'approved');
+                        successCount++;
+                        checkbox.checked = false;
+                    } else {
+                        errorCount++;
+                        console.error(`Failed to approve request ${requestId}:`, data.message);
+                    }
                 } else {
                     errorCount++;
-                    console.error(`Failed to approve request ${requestId}:`, data.message);
+                    console.error(`HTTP error approving request ${requestId}:`, response.status);
                 }
             } catch (error) {
                 errorCount++;
                 console.error(`Error approving request ${requestId}:`, error);
             }
             
-            // Small delay between requests to avoid overwhelming the server
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 300));
         }
 
         this.updateRequestCounts();
@@ -804,71 +1096,97 @@ class ManagerRequests {
             this.showNotification(`Successfully approved ${successCount} requests`, 'success');
         }
         if (errorCount > 0) {
-            this.showNotification(`Failed to approve ${errorCount} requests`, 'error');
+            this.showNotification(`Failed to approve ${errorCount} requests. Please check the console for details.`, 'error');
         }
     }
 
     async handleBulkReject() {
         const checkedBoxes = document.querySelectorAll('.request-checkbox:checked');
-        if (checkedBoxes.length === 0) return;
+        console.log(`Total checked boxes: ${checkedBoxes.length}`);
+        
+        if (checkedBoxes.length === 0) {
+            this.showNotification('No requests selected', 'warning');
+            return;
+        }
 
         // Filter only pending requests
         const pendingRequests = Array.from(checkedBoxes).filter(checkbox => {
-            const container = checkbox.closest('.request-row') || checkbox.closest('.request-card');
-            return container && container.dataset.status === 'pending';
+            const container = checkbox.closest('tr, .request-row, .request-card, .request-item');
+            const status = this.getRowStatus(container);
+            console.log(`Checkbox container status: "${status}", isPending: ${this.isPendingStatus(status)}`);
+            return this.isPendingStatus(status);
         });
+
+        console.log(`Pending requests found: ${pendingRequests.length}`);
 
         if (pendingRequests.length === 0) {
             this.showNotification('No pending requests selected', 'warning');
             return;
         }
 
-        const reason = await this.showRejectModal(`${pendingRequests.length} Farmers`);
-        if (!reason) return;
+        try {
+            const reason = await this.showRejectModal(`${pendingRequests.length} Farmers`);
+            if (!reason) return;
 
-        this.showNotification(`Processing ${pendingRequests.length} rejections...`, 'info');
+            this.showNotification(`Processing ${pendingRequests.length} rejections...`, 'info');
 
-        let successCount = 0;
-        let errorCount = 0;
+            let successCount = 0;
+            let errorCount = 0;
 
-        for (const checkbox of pendingRequests) {
-            const requestId = checkbox.value;
-            try {
-                const response = await fetch(`/api/requests/${requestId}/reject`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ rejectionReason: reason })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    this.updateRequestStatus(requestId, 'canceled', reason);
-                    successCount++;
-                    checkbox.checked = false; // Uncheck after processing
-                } else {
+            for (const checkbox of pendingRequests) {
+                const container = checkbox.closest('tr, .request-row, .request-card, .request-item');
+                const requestId = this.getRequestIdFromRow(container);
+                
+                if (!requestId) {
                     errorCount++;
-                    console.error(`Failed to reject request ${requestId}:`, data.message);
+                    continue;
                 }
-            } catch (error) {
-                errorCount++;
-                console.error(`Error rejecting request ${requestId}:`, error);
-            }
-            
-            // Small delay between requests
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
 
-        this.updateRequestCounts();
-        this.updateBulkActionButtons();
-        
-        if (successCount > 0) {
-            this.showNotification(`Successfully rejected ${successCount} requests`, 'success');
-        }
-        if (errorCount > 0) {
-            this.showNotification(`Failed to reject ${errorCount} requests`, 'error');
+                try {
+                    const response = await fetch(`/api/requests/${requestId}/reject`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ rejectionReason: reason })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            this.updateRequestStatus(requestId, 'rejected', reason);
+                            successCount++;
+                            checkbox.checked = false;
+                        } else {
+                            errorCount++;
+                            console.error(`Failed to reject request ${requestId}:`, data.message);
+                        }
+                    } else {
+                        errorCount++;
+                        console.error(`HTTP error rejecting request ${requestId}:`, response.status);
+                    }
+                } catch (error) {
+                    errorCount++;
+                    console.error(`Error rejecting request ${requestId}:`, error);
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            this.updateRequestCounts();
+            this.updateBulkActionButtons();
+            
+            if (successCount > 0) {
+                this.showNotification(`Successfully rejected ${successCount} requests`, 'success');
+            }
+            if (errorCount > 0) {
+                this.showNotification(`Failed to reject ${errorCount} requests. Please check the console for details.`, 'error');
+            }
+        } catch (error) {
+            console.error('Error in bulk reject:', error);
+            this.showNotification('Failed to process bulk rejection', 'error');
         }
     }
 
@@ -884,11 +1202,11 @@ class ManagerRequests {
 
         // Toggle containers
         if (view === 'table') {
-            tableContainer.style.display = 'block';
-            cardsContainer.style.display = 'none';
+            if (tableContainer) tableContainer.style.display = 'block';
+            if (cardsContainer) cardsContainer.style.display = 'none';
         } else {
-            tableContainer.style.display = 'none';
-            cardsContainer.style.display = 'block';
+            if (tableContainer) tableContainer.style.display = 'none';
+            if (cardsContainer) cardsContainer.style.display = 'block';
         }
     }
 
@@ -1090,6 +1408,7 @@ additionalStyles.textContent = `
         margin-bottom: 20px;
         transition: all 0.3s ease;
         min-height: 100px;
+        box-sizing: border-box;
     }
     
     .modal-body textarea:focus {
@@ -1189,7 +1508,7 @@ additionalStyles.textContent = `
     .status-updated {
         background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
         animation: statusUpdatePulse 1.5s ease;
-        border: 2px solid #0ea5e9;
+        border: 2px solid #0ea5e9 !important;
     }
     
     @keyframes statusUpdatePulse {
@@ -1514,9 +1833,10 @@ additionalStyles.textContent = `
     
     /* Table Row Selection */
     .request-row.selected,
-    .request-card.selected {
-        background: rgba(59, 130, 246, 0.05);
-        border-color: #3b82f6;
+    .request-card.selected,
+    tr.selected {
+        background: rgba(59, 130, 246, 0.05) !important;
+        border-color: #3b82f6 !important;
     }
     
     /* Improved Status Text */
@@ -1551,6 +1871,17 @@ additionalStyles.textContent = `
     
     .menu-btn:hover {
         background: #f3f4f6;
+        border-radius: 4px;
+    }
+    
+    /* Rejection reason styling */
+    .rejection-reason {
+        font-size: 12px;
+        color: #ef4444;
+        font-style: italic;
+        margin-top: 4px;
+        padding: 4px 8px;
+        background: rgba(239, 68, 68, 0.1);
         border-radius: 4px;
     }
 `;

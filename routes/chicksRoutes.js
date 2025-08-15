@@ -4,7 +4,7 @@ const {
   ensureAuthenticated,
   ensureFarmer,
 } = require("../middleware/authMiddleware");
-// Assuming chickRequestModel is the Mongoose model for chick requests
+
 const chickRequest = require("../models/chickRequestModel");
 
 // Route to display the chick request form
@@ -16,9 +16,7 @@ router.get(
     try {
       // Find all chick requests associated with the currently logged-in user
       // Using req.user._id as populated by Passport
-      const requests = await chickRequest.find({
-        user: req.user._id,
-      });
+      const requests = await chickRequest.find({user: req.user._id});
 
       // Determine if the farmer is a 'starter' based on whether they have existing requests
       const isStarter = requests.length === 0;
@@ -128,4 +126,8 @@ router.post(
     }
   }
 );
+// A feeds request Route for Starter Farmers.
+router.get('/feedsReq', (req, res)=>{
+  res.render("feeds");
+})
 module.exports = router;

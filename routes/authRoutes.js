@@ -12,7 +12,7 @@ router.post("/signup", async (req, res) => {
     const user = new User(req.body);
     let existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
-      return res.status(400).send("Email already Exists.");
+      return res.status(400).send(" Hooray! Email already Exists, PLease try again later");
     } else {
       await User.register(user, req.body.password, (err) => {
         if (err) {
@@ -31,19 +31,16 @@ router.get("/login", (req, res) => {
   res.render("login");
 });
 
-router.post(
-  "/login",
-  passport.authenticate("local", { failureRedirect: "/login" }),
-  (req, res) => {
+router.post( "/login", passport.authenticate("local", { failureRedirect: "/login" }), (req, res) => {
     req.session.user = req.user;
     if (req.user.role == "farmer") {
       res.redirect("/farmerDashBoard");
-    } else if (req.user.role == "salesRep") {
-      res.redirect("/");
+    } else if (req.user.role == "SalesRep") {
+      res.redirect("/sales-rep-board");
     } else if (req.user.role == "brooderManager") {
       res.redirect("/managerDashBoard")
     } else {
-      res.redirect("/sales-rep-board");
+      res.status(400).send("You are not Part of us!")
     }
   }
 );
