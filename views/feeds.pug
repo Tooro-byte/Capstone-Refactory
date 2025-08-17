@@ -1,388 +1,341 @@
-doctype html
-html(lang="en")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title Young4ChickS - Feeds Request Form
-    link(rel="stylesheet", href="/Styles/feeds.css")
-    link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css", rel="stylesheet")
-  
-  body
-    .container
-      header.form-header
-        .logo-section
-          i.fas.fa-seedling.logo-icon
-          h1 Young4ChickS
-          p.tagline Urban Brooder Initiative
-        
-        nav.breadcrumb
-          span Home
-          i.fas.fa-chevron-right
-          span Dashboard
-          i.fas.fa-chevron-right
-          span.active Feeds Request
-      
-      main.form-main
-        .form-container
-          .form-header-section
-            h2
-              i.fas.fa-wheat-awn
-              | Feed Request Application
-            p.form-description Submit your feed request and track your allocation status
-          
-          .progress-indicator
-            .progress-step.active
-              .step-number 1
-              .step-label Request Details
-            .progress-line
-            .progress-step
-              .step-number 2
-              .step-label Approval
-            .progress-line
-            .progress-step
-              .step-number 3
-              .step-label Collection
-          
-          form#feedsRequestForm.feeds-form(action="/feedsReq", method="POST")
-            .form-section
-              .section-header
-                i.fas.fa-user-circle
-                h3 Farmer Information
-              
-              .form-row
-                .form-group
-                  label(for="farmerName") Full Name *
-                  input#farmerName(
+extends layout
+
+block content
+  .feeds-wrapper
+    .feeds-container
+      .feeds-header
+        .header-content
+          .header-icon 🌾
+          .header-text
+            h1.feeds-title Request Animal Feeds
+            p.feeds-subtitle Get quality feeds for your chicks - 2 bags per farmer, payable after 2 months
+        .header-stats
+          .stat-item
+            .stat-number 2
+            .stat-label Bags Maximum
+          .stat-item
+            .stat-number 60
+            .stat-label Days to Pay
+          .stat-item
+            .stat-number Free
+            .stat-label Initial Cost
+
+      .feeds-form-container
+        .form-progress
+          .progress-step.active
+            .step-number 1
+            .step-label Farmer Info
+          .progress-line
+          .progress-step
+            .step-number 2
+            .step-label Feed Details
+          .progress-line
+          .progress-step
+            .step-number 3
+            .step-label Confirmation
+
+        form#feedsRequestForm.feeds-form(action="/feedsReq", method="POST")
+          .form-section.active(data-section="1")
+            .section-header
+              .section-icon 👤
+              .section-title Farmer Information
+              .section-subtitle Verify your farmer details
+
+            .form-grid
+              .form-group.full-width
+                label.form-label(for="farmerName") Full Name
+                .input-wrapper
+                  .input-icon 👤
+                  input#farmerName.form-input(
                     type="text", 
                     name="farmerName", 
-                    required,
-                    placeholder="Enter your full name"
+                    placeholder="Enter your full name",
+                    required
                   )
-                  .error-message
-                
-                .form-group
-                  label(for="farmerNIN") Farmer NIN Number *
-                  input#farmerNIN(
+                .field-hint Your registered name as a Young4Chicks farmer
+
+              .form-group
+                label.form-label(for="farmerPhone") Phone Number
+                .input-wrapper
+                  .input-icon 📱
+                  input#farmerPhone.form-input(
+                    type="tel", 
+                    name="farmerPhone", 
+                    placeholder="+256 XXX XXX XXX",
+                    required
+                  )
+
+              .form-group
+                label.form-label(for="farmerNIN") NIN Number
+                .input-wrapper
+                  .input-icon 🆔
+                  input#farmerNIN.form-input(
                     type="text", 
                     name="farmerNIN", 
-                    required,
-                    pattern="[A-Z]{2}[0-9]{14}",
-                    placeholder="e.g., CM95051234567890"
+                    placeholder="CM12345678901234",
+                    required
                   )
-                  .error-message
-              
-              .form-row
-                .form-group
-                  label(for="phoneNumber") Phone Number *
-                  input#phoneNumber(
-                    type="tel", 
-                    name="phoneNumber", 
-                    required,
-                    pattern="[0-9]{10}",
-                    placeholder="e.g., 0700123456"
-                  )
-                  .error-message
-                
-                .form-group
-                  label(for="farmerType") Farmer Category *
-                  select#farmerType(name="farmerType", required)
-                    option(value="") Select Category
+
+              .form-group
+                label.form-label(for="farmerType") Farmer Type
+                .input-wrapper
+                  .input-icon 🏷️
+                  select#farmerType.form-select(name="farmerType", required)
+                    option(value="") Select farmer type
                     option(value="starter") Starter Farmer
                     option(value="returning") Returning Farmer
-                  .error-message
-            
-            .form-section
-              .section-header
-                i.fas.fa-clipboard-list
-                h3 Current Chick Information
-              
-              .info-card
-                .info-header
-                  i.fas.fa-info-circle
-                  | Feed Allocation Rules
-                ul.rules-list
-                  li Each farmer is eligible for 2 bags of feed per chick batch
-                  li Feed cost is payable after 2 months
-                  li Feed allocation is based on approved chick requests
-              
-              .form-row
-                .form-group
-                  label(for="lastChickRequest") Last Chick Request ID *
-                  input#lastChickRequest(
+
+              .form-group
+                label.form-label(for="currentChicks") Current Chicks Count
+                .input-wrapper
+                  .input-icon 🐣
+                  input#currentChicks.form-input(
+                    type="number", 
+                    name="currentChicks", 
+                    placeholder="Number of chicks you currently have",
+                    min="0",
+                    required
+                  )
+
+              .form-group.full-width
+                label.form-label(for="farmLocation") Farm Location
+                .input-wrapper
+                  .input-icon 📍
+                  input#farmLocation.form-input(
                     type="text", 
-                    name="lastChickRequest", 
-                    required,
-                    placeholder="e.g., CR-2024-001"
+                    name="farmLocation", 
+                    placeholder="Enter your farm location/address",
+                    required
                   )
-                  .help-text Enter your most recent approved chick request ID
-                  .error-message
-                
-                .form-group
-                  label(for="chickQuantity") Number of Chicks Received *
-                  input#chickQuantity(
-                    type="number", 
-                    name="chickQuantity", 
-                    required,
-                    min="1",
-                    max="500",
-                    placeholder="Enter number of chicks"
+
+          .form-section(data-section="2")
+            .section-header
+              .section-icon 🌾
+              .section-title Feed Requirements
+              .section-subtitle Specify your feed needs
+
+            .feed-types-grid
+              .feed-type-card
+                input#starterFeed.feed-checkbox(type="checkbox", name="feedTypes", value="starter")
+                label.feed-card-label(for="starterFeed")
+                  .feed-icon 🐣
+                  .feed-info
+                    .feed-name Starter Feed
+                    .feed-description For chicks 0-8 weeks old
+                    .feed-price UGX 45,000 per bag
+                  .feed-check ✓
+
+              .feed-type-card
+                input#growerFeed.feed-checkbox(type="checkbox", name="feedTypes", value="grower")
+                label.feed-card-label(for="growerFeed")
+                  .feed-icon 🐔
+                  .feed-info
+                    .feed-name Grower Feed
+                    .feed-description For chicks 9-18 weeks old
+                    .feed-price UGX 42,000 per bag
+                  .feed-check ✓
+
+              .feed-type-card
+                input#layerFeed.feed-checkbox(type="checkbox", name="feedTypes", value="layer")
+                label.feed-card-label(for="layerFeed")
+                  .feed-icon 🥚
+                  .feed-info
+                    .feed-name Layer Feed
+                    .feed-description For laying hens 19+ weeks
+                    .feed-price UGX 40,000 per bag
+                  .feed-check ✓
+
+              .feed-type-card
+                input#broilerFeed.feed-checkbox(type="checkbox", name="feedTypes", value="broiler")
+                label.feed-card-label(for="broilerFeed")
+                  .feed-icon 🍗
+                  .feed-info
+                    .feed-name Broiler Feed
+                    .feed-description For meat production
+                    .feed-price UGX 43,000 per bag
+                  .feed-check ✓
+
+            .form-grid
+              .form-group
+                label.form-label(for="feedQuantity") Number of Bags
+                .input-wrapper
+                  .input-icon 📦
+                  select#feedQuantity.form-select(name="feedQuantity", required)
+                    option(value="") Select quantity
+                    option(value="1") 1 Bag
+                    option(value="2") 2 Bags (Maximum)
+
+              .form-group
+                label.form-label(for="urgency") Urgency Level
+                .input-wrapper
+                  .input-icon ⚡
+                  select#urgency.form-select(name="urgency", required)
+                    option(value="") Select urgency
+                    option(value="normal") Normal (7-10 days)
+                    option(value="urgent") Urgent (3-5 days)
+                    option(value="emergency") Emergency (1-2 days)
+
+              .form-group.full-width
+                label.form-label(for="specialRequirements") Special Requirements
+                .input-wrapper
+                  .input-icon 📝
+                  textarea#specialRequirements.form-textarea(
+                    name="specialRequirements", 
+                    placeholder="Any special requirements or notes...",
+                    rows="3"
                   )
-                  .error-message
+
+          .form-section(data-section="3")
+            .section-header
+              .section-icon ✅
+              .section-title Confirmation
+              .section-subtitle Review your feed request
+
+            .confirmation-summary
+              .summary-card
+                .summary-header
+                  .summary-icon 👤
+                  .summary-title Farmer Details
+                .summary-content
+                  .summary-item
+                    .item-label Name:
+                    .item-value#confirmName -
+                  .summary-item
+                    .item-label Phone:
+                    .item-value#confirmPhone -
+                  .summary-item
+                    .item-label Type:
+                    .item-value#confirmType -
+                  .summary-item
+                    .item-label Current Chicks:
+                    .item-value#confirmChicks -
+
+              .summary-card
+                .summary-header
+                  .summary-icon 🌾
+                  .summary-title Feed Request
+                .summary-content
+                  .summary-item
+                    .item-label Feed Types:
+                    .item-value#confirmFeedTypes -
+                  .summary-item
+                    .item-label Quantity:
+                    .item-value#confirmQuantity -
+                  .summary-item
+                    .item-label Urgency:
+                    .item-value#confirmUrgency -
+                  .summary-item
+                    .item-label Total Cost:
+                    .item-value#confirmCost UGX 0
+
+            .terms-section
+              .terms-card
+                .terms-header
+                  .terms-icon ⚖️
+                  .terms-title Terms & Conditions
+                .terms-content
+                  .terms-list
+                    .terms-item
+                      .terms-check ✓
+                      .terms-text Maximum 2 bags per farmer per request
+                    .terms-item
+                      .terms-check ✓
+                      .terms-text Payment due after 60 days from delivery
+                    .terms-item
+                      .terms-check ✓
+                      .terms-text Feeds are non-refundable once delivered
+                    .terms-item
+                      .terms-check ✓
+                      .terms-text Quality guarantee for 30 days from delivery
+                    .terms-item
+                      .terms-check ✓
+                      .terms-text Delivery within specified urgency timeframe
+
+                .terms-agreement
+                  .checkbox-wrapper
+                    input#agreeTerms.terms-checkbox(type="checkbox", required)
+                    label.checkbox-label(for="agreeTerms")
+                      .checkbox-custom
+                      span I agree to the terms and conditions
+
+          .form-navigation
+            .nav-buttons
+              button#prevBtn.nav-btn.prev-btn(type="button", style="display: none;")
+                .btn-icon ←
+                span Previous
               
-              .form-row
-                .form-group
-                  label(for="chickType") Type of Chicks *
-                  select#chickType(name="chickType", required)
-                    option(value="") Select Chick Type
-                    option(value="layers_local") Layers - Local
-                    option(value="layers_exotic") Layers - Exotic
-                    option(value="broilers_local") Broilers - Local
-                    option(value="broilers_exotic") Broilers - Exotic
-                  .error-message
-                
-                .form-group
-                  label(for="chickAge") Chick Age (Days) *
-                  input#chickAge(
-                    type="number", 
-                    name="chickAge", 
-                    required,
-                    min="1",
-                    max="365",
-                    placeholder="Age in days"
-                  )
-                  .error-message
-            
-            .form-section
-              .section-header
-                i.fas.fa-wheat-awn
-                h3 Feed Request Details
+              button#nextBtn.nav-btn.next-btn(type="button")
+                span Next
+                .btn-icon →
               
-              .feed-calculation
-                .calc-header
-                  i.fas.fa-calculator
-                  | Feed Allocation Calculator
-                
-                .calc-row
-                  .calc-item
-                    .calc-label Standard Allocation:
-                    .calc-value#standardAllocation 2 bags per farmer
-                  
-                  .calc-item
-                    .calc-label Cost per Bag:
-                    .calc-value UGx 35,000
-                  
-                  .calc-item.total
-                    .calc-label Total Cost:
-                    .calc-value#totalCost UGx 70,000
-                
-                .payment-info
-                  i.fas.fa-calendar-alt
-                  | Payment due: 2 months after collection
-              
-              .form-row
-                .form-group.full-width
-                  label(for="feedPurpose") Purpose of Feed Request *
-                  select#feedPurpose(name="feedPurpose", required)
-                    option(value="") Select Purpose
-                    option(value="starter") Starter Feed (0-8 weeks)
-                    option(value="grower") Grower Feed (9-18 weeks)
-                    option(value="layer") Layer Feed (19+ weeks)
-                    option(value="broiler_finisher") Broiler Finisher (6+ weeks)
-                  .error-message
-              
-              .form-row
-                .form-group.full-width
-                  label(for="deliveryPreference") Delivery Preference *
-                  .radio-group
-                    label.radio-option
-                      input(type="radio", name="deliveryPreference", value="pickup", required)
-                      .radio-custom
-                      .radio-label
-                        i.fas.fa-store
-                        | Pickup from Office
-                    
-                    label.radio-option
-                      input(type="radio", name="deliveryPreference", value="delivery")
-                      .radio-custom
-                      .radio-label
-                        i.fas.fa-truck
-                        | Home Delivery (+UGx 5,000)
-                  .error-message
-              
-              .form-group.delivery-address(style="display: none")
-                label(for="deliveryAddress") Delivery Address
-                textarea#deliveryAddress(
-                  name="deliveryAddress", 
-                  rows="3",
-                  placeholder="Enter your complete delivery address"
-                )
-            
-            .form-section
-              .section-header
-                i.fas.fa-file-signature
-                h3 Declaration & Submission
-              
-              .declaration-box
-                label.checkbox-option
-                  input#termsAgreement(type="checkbox", name="termsAgreement", required)
-                  .checkbox-custom
-                  .checkbox-label
-                    | I declare that the information provided is accurate and I agree to the 
-                    a(href="#", target="_blank") Terms and Conditions
-                    |  of the Young4ChickS feed program.
-                
-                label.checkbox-option
-                  input#paymentAgreement(type="checkbox", name="paymentAgreement", required)
-                  .checkbox-custom
-                  .checkbox-label
-                    | I acknowledge that feed payment is due within 2 months of collection 
-                    | and failure to pay may affect future allocations.
-              
-              .form-actions
-                button.btn-secondary(type="button", onclick="history.back()")
-                  i.fas.fa-arrow-left
-                  | Back to Dashboard
-                
-                button.btn-primary(type="submit")
-                  i.fas.fa-paper-plane
-                  | Submit Feed Request
-                  .loading-spinner
-        
-        aside.sidebar-info
-          .info-panel
-            .panel-header
-              i.fas.fa-lightbulb
-              | Quick Tips
-            
-            ul.tips-list
-              li
-                i.fas.fa-check-circle
-                | Ensure your chick request is approved before applying for feeds
-              li
-                i.fas.fa-clock
-                | Feed requests are processed within 2-3 business days
-              li
-                i.fas.fa-phone
-                | Contact our sales reps for urgent requests: 0700-CHICKS
-              li
-                i.fas.fa-money-bill
-                | Payment plans available for returning farmers
-          
-          .contact-card
-            .contact-header
-              i.fas.fa-headset
-              | Need Help?
-            
-            .contact-info
-              .contact-item
-                i.fas.fa-phone
-                | 0700-FEEDS-UG
-              .contact-item
-                i.fas.fa-envelope
-                | feeds@young4chicks.ug
-              .contact-item
-                i.fas.fa-clock
-                | Mon-Fri: 8AM-6PM
-    
-    script.
-      // Form validation and interaction
-      document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('feedsRequestForm');
-        const deliveryRadios = document.querySelectorAll('input[name="deliveryPreference"]');
-        const deliveryAddress = document.querySelector('.delivery-address');
-        const chickQuantityInput = document.getElementById('chickQuantity');
-        const totalCostElement = document.getElementById('totalCost');
-        
-        // Handle delivery preference change
-        deliveryRadios.forEach(radio => {
-          radio.addEventListener('change', function() {
-            if (this.value === 'delivery') {
-              deliveryAddress.style.display = 'block';
-              deliveryAddress.querySelector('textarea').required = true;
-            } else {
-              deliveryAddress.style.display = 'none';
-              deliveryAddress.querySelector('textarea').required = false;
-            }
-          });
-        });
-        
-        // Update cost calculation
-        function updateCost() {
-          const basePrice = 70000; // 2 bags × 35,000
-          const isDelivery = document.querySelector('input[name="deliveryPreference"]:checked')?.value === 'delivery';
-          const deliveryFee = isDelivery ? 5000 : 0;
-          const total = basePrice + deliveryFee;
-          totalCostElement.textContent = `UGx ${total.toLocaleString()}`;
-        }
-        
-        deliveryRadios.forEach(radio => {
-          radio.addEventListener('change', updateCost);
-        });
-        
-        // Form submission
-        form.addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          // Show loading state
-          const submitBtn = form.querySelector('button[type="submit"]');
-          const spinner = submitBtn.querySelector('.loading-spinner');
-          submitBtn.disabled = true;
-          spinner.style.display = 'block';
-          
-          // Simulate form submission
-          setTimeout(() => {
-            alert('Feed request submitted successfully! You will receive a confirmation SMS shortly.');
-            submitBtn.disabled = false;
-            spinner.style.display = 'none';
-          }, 2000);
-        });
-        
-        // Real-time validation
-        const inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-          input.addEventListener('blur', validateField);
-          input.addEventListener('input', clearError);
-        });
-        
-        function validateField(e) {
-          const field = e.target;
-          const errorElement = field.parentNode.querySelector('.error-message');
-          
-          if (!field.validity.valid || !field.value.trim()) {
-            field.classList.add('error');
-            if (errorElement) {
-              errorElement.textContent = getErrorMessage(field);
-            }
-          } else {
-            field.classList.remove('error');
-            if (errorElement) {
-              errorElement.textContent = '';
-            }
-          }
-        }
-        
-        function clearError(e) {
-          const field = e.target;
-          if (field.value.trim()) {
-            field.classList.remove('error');
-            const errorElement = field.parentNode.querySelector('.error-message');
-            if (errorElement) {
-              errorElement.textContent = '';
-            }
-          }
-        }
-        
-        function getErrorMessage(field) {
-          if (field.validity.valueMissing) {
-            return 'This field is required';
-          }
-          if (field.validity.patternMismatch) {
-            if (field.name === 'farmerNIN') return 'Invalid NIN format (e.g., CM95051234567890)';
-            if (field.name === 'phoneNumber') return 'Invalid phone number format';
-          }
-          if (field.validity.rangeUnderflow || field.validity.rangeOverflow) {
-            return `Value must be between ${field.min} and ${field.max}`;
-          }
-          return 'Please enter a valid value';
-        }
-      });
+              button#submitBtn.nav-btn.submit-btn(type="submit", style="display: none;")
+                .btn-icon ✓
+                span Submit Request
+
+      .feeds-info-sidebar
+        .info-card
+          .info-header
+            .info-icon 💡
+            .info-title Quick Tips
+          .info-content
+            .tip-item
+              .tip-icon 🎯
+              .tip-text Choose the right feed type for your chicks' age
+            .tip-item
+              .tip-icon ⏰
+              .tip-text Plan ahead - normal delivery takes 7-10 days
+            .tip-item
+              .tip-icon 💰
+              .tip-text Payment is due 60 days after delivery
+            .tip-item
+              .tip-icon 📞
+              .tip-text Contact support for urgent requests
+
+        .info-card
+          .info-header
+            .info-icon 📊
+            .info-title Feed Guide
+          .info-content
+            .guide-item
+              .guide-age 0-8 weeks
+              .guide-feed Starter Feed
+              .guide-protein 20-24% protein
+            .guide-item
+              .guide-age 9-18 weeks
+              .guide-feed Grower Feed
+              .guide-protein 16-18% protein
+            .guide-item
+              .guide-age 19+ weeks
+              .guide-feed Layer Feed
+              .guide-protein 16-18% protein
+            .guide-item
+              .guide-age Broilers
+              .guide-feed Broiler Feed
+              .guide-protein 22-24% protein
+
+        .info-card
+          .info-header
+            .info-icon 📞
+            .info-title Need Help?
+          .info-content
+            .contact-item
+              .contact-icon 📱
+              .contact-info
+                .contact-label Phone
+                .contact-value +256 769 189 155
+            .contact-item
+              .contact-icon 📧
+              .contact-info
+                .contact-label Email
+                .contact-value support@young4chicks.com
+            .contact-item
+              .contact-icon 🕒
+              .contact-info
+                .contact-label Hours
+                .contact-value Mon-Fri 8AM-6PM
+
+block append head
+  link(rel="stylesheet", href="/Styles/feeds.css")
+
+block append scripts
+  script(src="/vanilla-js/feeds.js")

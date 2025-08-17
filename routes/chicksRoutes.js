@@ -126,8 +126,4 @@ router.post(
     }
   }
 );
-// A feeds request Route for Starter Farmers.
-router.get('/feedsReq', (req, res)=>{
-  res.render("feeds");
-})
 module.exports = router;

@@ -482,6 +482,7 @@ class ManagerDashboard {
             
             if (data.success) {
                 this.updateDashboardStats(data.data);
+                this.updateFeedsRequestsStats(data.data.feedsStats);
                 this.showNotification('Dashboard refreshed successfully', 'success');
             } else {
                 this.showNotification('Failed to refresh dashboard', 'error');
@@ -489,6 +490,60 @@ class ManagerDashboard {
         } catch (error) {
             console.error('Error refreshing dashboard:', error);
             this.showNotification('Network error while refreshing', 'error');
+        }
+    }
+
+    updateFeedsRequestsStats(feedsStats) {
+        if (!feedsStats) return;
+        
+        // Update feeds requests badge
+        const feedsRequestsLink = document.querySelector('a[href="/manager/feeds-requests"]');
+        if (feedsRequestsLink) {
+            let badge = feedsRequestsLink.querySelector('.badge');
+            
+            if (feedsStats.pendingRequests > 0) {
+                if (!badge) {
+                    badge = document.createElement('div');
+                    badge.className = 'badge highlight';
+                    feedsRequestsLink.appendChild(badge);
+                }
+                badge.textContent = feedsStats.pendingRequests;
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+        
+        // Add feeds stats to dashboard if needed
+        this.addFeedsStatsCard(feedsStats);
+    }
+
+    addFeedsStatsCard(feedsStats) {
+        // Check if feeds stats card already exists
+        let feedsStatsCard = document.querySelector('.feeds-stats-card');
+        
+        if (!feedsStatsCard) {
+            // Show the existing feeds stats card that was hidden
+            feedsStatsCard = document.querySelector('.feeds-stats-card');
+            if (feedsStatsCard) {
+                feedsStatsCard.style.display = 'block';
+            }
+        } else {
+            // Show the card if it was hidden
+            feedsStatsCard.style.display = 'block';
+        }
+        
+        // Update the feeds stats card with current data
+        if (feedsStatsCard) {
+            // Update existing feeds stats
+            const feedsPending = feedsStatsCard.querySelector('#feedsPending');
+            const feedsApproved = feedsStatsCard.querySelector('#feedsApproved');
+            const feedsTotal = feedsStatsCard.querySelector('#feedsTotal');
+            const feedsRevenue = feedsStatsCard.querySelector('#feedsRevenue');
+            
+            if (feedsPending) this.animateNumberChange(feedsPending, feedsStats.pendingRequests || 0);
+            if (feedsApproved) this.animateNumberChange(feedsApproved, feedsStats.approvedRequests || 0);
+            if (feedsTotal) this.animateNumberChange(feedsTotal, feedsStats.totalRequests || 0);
+            if (feedsRevenue) this.animateNumberChange(feedsRevenue, `UGX ${(feedsStats.totalRevenue || 0).toLocaleString()}`);
         }
     }
 
@@ -820,6 +875,74 @@ style.textContent = `
     .btn-reject.loading {
         background: #9ca3af !important;
         cursor: not-allowed;
+    }
+
+    .feeds-stats-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .feeds-stats-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .feeds-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 16px;
+        padding: 16px 0;
+    }
+
+    .feeds-stat-item {
+        text-align: center;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .feeds-stat-item .stat-number {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 4px;
+    }
+
+    .feeds-stat-item .stat-label {
+        font-size: 12px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge {
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        min-width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: -8px;
+        right: -8px;
+    }
+
+    .badge.highlight {
+        animation: badgePulse 2s infinite;
+    }
+
+    @keyframes badgePulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
     }
 `;
 

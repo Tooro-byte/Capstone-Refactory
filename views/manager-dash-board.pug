@@ -69,6 +69,12 @@ block content
               a.nav-link(href="/manageRequests")
                 .nav-icon 📊
                 span All Requests
+            li.nav-item
+              a.nav-link(href="/manager/feeds-requests")
+                .nav-icon 🌾
+                span Feeds Requests
+                if pendingFeedsRequests && pendingFeedsRequests > 0
+                 .badge.highlight= pendingFeedsRequests
 
         .nav-section
           .section-title Farmer Management
@@ -162,7 +168,7 @@ block content
           .stat-card.revenue
             .stat-icon 💰
             .stat-content
-              .stat-number= chickSales ? `$${chickSales.totalChickSales || 0}` : "UGX0"
+              .stat-number= chickSales ? `UGX ${chickSales.totalChickSales || 0}` : "UGX0"
               .stat-label Total Revenue
               .stat-trend= chickSales && chickSales.totalChickSales > 0 ? `${chickSales.totalNumChicks || 0} chicks sold` : "Start earning today"
 
@@ -203,11 +209,11 @@ block content
               - var pendingRequestsList = requests ? requests.filter(req => req.status === 'pending' || req.status === 'Pending') : []
               if pendingRequestsList && pendingRequestsList.length > 0
                 each request in pendingRequestsList.slice(0, 5)
-                  .request-item
+                  .request-item(data-request-id=request._id)
                     .request-info
                       .request-details= `${request.user ? request.user.name : 'Unknown'} - ${request.numChicks} ${request.chickType} chicks`
                       .request-date= `Requested: ${new Date(request.requestDate).toLocaleDateString()}`
-                      .request-cost= `Cost: $${request.totalCost || 0}`
+                      .request-cost= `Cost: UGX ${(request.totalCost || 0).toLocaleString()}`
                     .request-actions
                       a.btn-approve(href=`/requests/${request._id}`) Approve
                       a.btn-reject(href=`/requests/reject/${request._id}`) Reject
@@ -216,6 +222,29 @@ block content
                   .empty-icon ✅
                   .empty-title No pending requests
                   .empty-subtitle All requests processed
+
+          //- Feeds Requests Overview Card (Static placeholder that will be updated by JavaScript)
+          .dashboard-card.feeds-stats-card(style="display: none;")
+            .card-header
+              .card-title
+                .title-icon 🌾
+                span Feeds Requests Overview
+              .card-actions
+                a.btn-small(href="/manager/feeds-requests") Manage Feeds
+            .card-content
+              .feeds-stats-grid
+                .feeds-stat-item
+                  .stat-number#feedsPending 0
+                  .stat-label Pending
+                .feeds-stat-item
+                  .stat-number#feedsApproved 0
+                  .stat-label Approved
+                .feeds-stat-item
+                  .stat-number#feedsTotal 0
+                  .stat-label Total
+                .feeds-stat-item
+                  .stat-number#feedsRevenue UGX 0
+                  .stat-label Revenue
 
           .dashboard-card.quick-actions-card
             .card-header
@@ -239,6 +268,11 @@ block content
                   .action-title View All Requests
                   .action-desc Manage farmer requests
                   a.action-btn(href="/requests") View Requests
+                .action-item
+                  .action-icon 🌾
+                  .action-title Manage Feeds
+                  .action-desc Handle feed requests
+                  a.action-btn(href="/manager/feeds-requests") Feeds Requests
 
           .dashboard-card.activities-card
             .card-header
@@ -307,7 +341,7 @@ block content
                     .stat-value= chickSales ? chickSales.totalNumChicks || 0 : 0
                     .stat-label Total Chicks Sold
                   .stat-item
-                    .stat-value= chickSales ? `$${chickSales.totalChickSales || 0}` : "UGX0"
+                    .stat-value= chickSales ? `UGX ${chickSales.totalChickSales || 0}` : "UGX0"
                     .stat-label Total Revenue
                   .stat-item
                     .stat-value= approvedRequests + dispatchedRequests
@@ -322,6 +356,13 @@ block content
                   .summary-item
                     .summary-label Role:
                     .summary-value= currentManager ? currentManager.role : 'brooderManager'
+
+        .dashboard-footer
+          .footer-content
+            .last-update Last updated: Never
+            button#refresh-btn.refresh-button
+              .refresh-icon 🔄
+              span Refresh Dashboard
 
 block append head
   link(rel="stylesheet", href="/Styles/manager-dashboard.css")

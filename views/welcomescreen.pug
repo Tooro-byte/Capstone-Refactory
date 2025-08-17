@@ -4,35 +4,273 @@ html(lang="en")
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title Young4Chicks Inc
-    //-Use Tailwind CSS for modern, responsive styling
     script(src="https://cdn.tailwindcss.com")
     link(rel="preconnect", href="https://fonts.googleapis.com")
     link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
-    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap", rel="stylesheet")
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap", rel="stylesheet")
     style.
       body {
         font-family: 'Inter', sans-serif;
-        /* New beautiful radial gradient background for a modern effect */
-        background: radial-gradient(circle, #0c1c3c, rgba(2, 24, 1, 1));
+        background: linear-gradient(135deg, #0c1c3c 0%, #1e3a8a 25%, #1e40af 50%, #2563eb 75%, #0c1c3c 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 8s ease-in-out infinite;
         color: white;
+        overflow: hidden;
       }
-      /* Animation for the loading text */
-      @keyframes fadeInOut {
-        0%, 100% { opacity: 0; }
-        50% { opacity: 1; }
+      
+      @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
       }
-      .fade-in-out {
-        animation: fadeInOut 2s infinite;
+      
+      .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
       }
-  body.flex.flex-col.items-center.justify-center.min-h-screen.p-4
-    //-Logo/Header Section
-    .flex.flex-col.items-center.justify-center.mb-6
-      //-Wordmark Logo
-      h1.text-5xl.sm_text-6xl.font-extrabold.text-white Young4Chicks
-    //-Simple Loading Indicator
-    .mt-8.text-lg.font-medium.fade-in-out Loading please wait........
+      
+      .particle {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        animation: float 15s infinite linear;
+      }
+      
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-10vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+      
+      .content {
+        position: relative;
+        z-index: 10;
+      }
+      
+      .logo-animation {
+        animation: logoGlow 3s ease-in-out infinite alternate;
+      }
+      
+      @keyframes logoGlow {
+        0% {
+          text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        100% {
+          text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 0 40px rgba(59, 130, 246, 0.4);
+        }
+      }
+      
+      .spinner-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+      }
+      
+      .spinner-ring {
+        position: absolute;
+        border-radius: 50%;
+        border: 3px solid transparent;
+      }
+      
+      .ring-1 {
+        width: 120px;
+        height: 120px;
+        border-top: 3px solid #60a5fa;
+        border-right: 3px solid #60a5fa;
+        animation: spin 2s linear infinite;
+      }
+      
+      .ring-2 {
+        width: 90px;
+        height: 90px;
+        top: 15px;
+        left: 15px;
+        border-top: 3px solid #3b82f6;
+        border-left: 3px solid #3b82f6;
+        animation: spin 1.5s linear infinite reverse;
+      }
+      
+      .ring-3 {
+        width: 60px;
+        height: 60px;
+        top: 30px;
+        left: 30px;
+        border-top: 3px solid #1d4ed8;
+        border-bottom: 3px solid #1d4ed8;
+        animation: spin 1s linear infinite;
+      }
+      
+      .ring-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        background: linear-gradient(45deg, #60a5fa, #3b82f6);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.2);
+          opacity: 0.7;
+        }
+      }
+      
+      .progress-bar {
+        width: 300px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #60a5fa, #3b82f6, #1d4ed8);
+        border-radius: 2px;
+        animation: progress 10s linear forwards;
+      }
+      
+      @keyframes progress {
+        0% { width: 0%; }
+        100% { width: 100%; }
+      }
+      
+      .fade-in {
+        animation: fadeInUp 1s ease-out forwards;
+        opacity: 0;
+      }
+      
+      .fade-in-delay-1 { animation-delay: 0.2s; }
+      .fade-in-delay-2 { animation-delay: 0.4s; }
+      .fade-in-delay-3 { animation-delay: 0.6s; }
+      
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+      }
+      
+      .loading-dots {
+        display: inline-flex;
+        gap: 4px;
+      }
+      
+      .dot {
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        animation: dotBounce 1.4s ease-in-out infinite both;
+      }
+      
+      .dot:nth-child(1) { animation-delay: -0.32s; }
+      .dot:nth-child(2) { animation-delay: -0.16s; }
+      
+      @keyframes dotBounce {
+        0%, 80%, 100% {
+          transform: scale(0);
+        }
+        40% {
+          transform: scale(1);
+        }
+      }
+
+  body.flex.flex-col.items-center.justify-center.min-h-screen.p-4.relative
+    // Animated background particles
+    .particles
+      - for (let i = 0; i < 50; i++)
+        .particle(style=`left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 15}s; animation-duration: ${15 + Math.random() * 10}s;`)
+    
+    .content.flex.flex-col.items-center.justify-center.text-center
+      //-Logo section with glow animation
+      .mb-8.fade-in
+        h1.text-6xl.sm_text-7xl.lg_text-8xl.font-black.logo-animation.tracking-tight Young4Chicks
+        p.text-lg.sm_text-xl.font-medium.text-blue-200.mt-2.fade-in.fade-in-delay-1 Empowering Urban Youth
+      
+      //-Hero badge
+      .mb-6.fade-in.fade-in-delay-1
+        .hero-badge.bg-blue-800.bg-opacity-30.px-4.py-2.rounded-full.border.border-blue-400.border-opacity-30
+          i.fas.fa-shield-alt.text-blue-300.mr-2
+          span.text-sm.font-medium.text-blue-100 Founded by Youth Member of Parliament Bukonzo West.
+        .spinner-container.mx-auto
+          .spinner-ring.ring-1
+          .spinner-ring.ring-2
+          .spinner-ring.ring-3
+          .ring-center
+      
+      //-Loading text with animated dots
+      .mb-6.fade-in.fade-in-delay-3
+        .flex.items-center.gap-2
+          span.text-xl.font-medium Preparing your experience
+          .loading-dots
+            .dot
+            .dot
+            .dot
+      
+      //-Progress bar
+      .fade-in.fade-in-delay-3
+        .progress-bar.mx-auto 
+          .progress-fill
+        p.text-sm.text-blue-300.mt-2.font-medium Please wait while we load...
+
     script.
-      //-Use a 10-second timeout before redirecting, as requested
+      // Add some dynamic particle generation
+      function createParticle() {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+        document.querySelector('.particles').appendChild(particle);
+        
+        setTimeout(() => {
+          particle.remove();
+        }, 25000);
+      }
+      
+      // Create additional particles every 2 seconds
+      setInterval(createParticle, 2000);
+      
+      // Redirect after 10 seconds as requested
       setTimeout(() => {
-        window.location.href = '/index';
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.5s ease-out';
+        setTimeout(() => {
+          window.location.href = '/index';
+        }, 500);
       }, 10000);

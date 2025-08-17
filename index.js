@@ -24,6 +24,7 @@ const managerRoute = require("./routes/managersRoutes");
 const stockRoutes = require('./routes/stockRoutes');
 const salesRepRoute = require('./routes/salesRepoRoutes');
 const pageRoutes = require("./routes/pagesRoutes");
+const feedRequests = require("./routes/feedsRequest");
 
 
 
@@ -78,7 +79,8 @@ app.use('/', farmersRoute);
 app.use('/', managerRoute);
 app.use('/', stockRoutes);
 app.use("/", salesRepRoute);
-app.use("/", pageRoutes)
+app.use("/", pageRoutes);
+app.use("/", feedRequests);
 
 //Handling Non -existing routes.
 app.use((req, res) => {

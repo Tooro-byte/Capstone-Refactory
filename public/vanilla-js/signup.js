@@ -1,6 +1,14 @@
 // Simple client-side validation for signup form
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the signup page by looking for the signup form
     const form = document.querySelector('form[action="/signup"]');
+    
+    if (!form) {
+        // If signup form doesn't exist, don't initialize
+        console.log('Signup form not found on this page');
+        return;
+    }
+
     const nameInput = document.getElementById('name');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -10,6 +18,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const recommenderNameInput = document.getElementById('recommenderName');
     const recommenderNINInput = document.getElementById('recommenderNIN');
     const submitButton = document.querySelector('button[type="submit"]');
+
+    // If any critical elements are missing, don't proceed
+    if (!nameInput || !emailInput || !passwordInput || !phoneInput || !roleSelect || !submitButton) {
+        console.error('Required form elements not found');
+        return;
+    }
 
     // Email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,6 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Create error display function
     function showError(input, message) {
+        if (!input || !input.parentNode) return;
+        
         removeError(input);
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
@@ -34,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function removeError(input) {
+        if (!input || !input.parentNode) return;
+        
         const existingError = input.parentNode.querySelector('.error-message');
         if (existingError) {
             existingError.remove();
@@ -42,12 +60,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showSuccess(input) {
+        if (!input) return;
+        
         removeError(input);
         input.style.borderColor = '#28a745';
     }
 
     // Individual field validators
     function validateName() {
+        if (!nameInput) return false;
+        
         const value = nameInput.value.trim();
         if (value === '') {
             showError(nameInput, 'Full name is required');
@@ -61,6 +83,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validateEmail() {
+        if (!emailInput) return false;
+        
         const value = emailInput.value.trim();
         if (value === '') {
             showError(emailInput, 'Email is required');
@@ -74,6 +98,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validatePassword() {
+        if (!passwordInput) return false;
+        
         const value = passwordInput.value;
         if (value === '') {
             showError(passwordInput, 'Password is required');
@@ -87,6 +113,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validatePhone() {
+        if (!phoneInput) return false;
+        
         const value = phoneInput.value.trim();
         if (value === '') {
             showError(phoneInput, 'Phone number is required');
@@ -100,6 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validateNIN() {
+        if (!ninInput) return true; // NIN might not exist for all roles
+        
         const value = ninInput.value.trim();
         if (value === '') {
             showError(ninInput, 'NIN number is required');
@@ -113,6 +143,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validateRole() {
+        if (!roleSelect) return false;
+        
         const value = roleSelect.value;
         if (value === '') {
             showError(roleSelect, 'Please select a role');
@@ -123,69 +155,80 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validateRecommenderFields() {
+        if (!roleSelect) return true;
+        
         const roleValue = roleSelect.value;
-        const recommenderName = recommenderNameInput.value.trim();
-        const recommenderNIN = recommenderNINInput.value.trim();
-        const ninValue = ninInput.value.trim();
+        const recommenderName = recommenderNameInput ? recommenderNameInput.value.trim() : '';
+        const recommenderNIN = recommenderNINInput ? recommenderNINInput.value.trim() : '';
+        const ninValue = ninInput ? ninInput.value.trim() : '';
 
         // Only validate NIN and recommender fields if role is farmer
         if (roleValue === 'farmer') {
             let isValid = true;
             
             // Validate NIN field
-            if (ninValue === '') {
-                showError(ninInput, 'NIN is required for farmers');
-                isValid = false;
-            } else if (ninValue.length < 8) {
-                showError(ninInput, 'NIN must be at least 8 characters');
-                isValid = false;
-            } else if (!ninRegex.test(ninValue)) {
-                showError(ninInput, 'NIN must contain only numbers and capital letters');
-                isValid = false;
-            } else {
-                showSuccess(ninInput);
+            if (ninInput) {
+                if (ninValue === '') {
+                    showError(ninInput, 'NIN is required for farmers');
+                    isValid = false;
+                } else if (ninValue.length < 8) {
+                    showError(ninInput, 'NIN must be at least 8 characters');
+                    isValid = false;
+                } else if (!ninRegex.test(ninValue)) {
+                    showError(ninInput, 'NIN must contain only numbers and capital letters');
+                    isValid = false;
+                } else {
+                    showSuccess(ninInput);
+                }
             }
 
             // Validate recommender name
-            if (recommenderName === '') {
-                showError(recommenderNameInput, 'Recommender name is required for farmers');
-                isValid = false;
-            } else {
-                showSuccess(recommenderNameInput);
+            if (recommenderNameInput) {
+                if (recommenderName === '') {
+                    showError(recommenderNameInput, 'Recommender name is required for farmers');
+                    isValid = false;
+                } else {
+                    showSuccess(recommenderNameInput);
+                }
             }
 
             // Validate recommender NIN
-            if (recommenderNIN === '') {
-                showError(recommenderNINInput, 'Recommender NIN is required for farmers');
-                isValid = false;
-            } else if (recommenderNIN.length < 8) {
-                showError(recommenderNINInput, 'Recommender NIN must be at least 8 characters');
-                isValid = false;
-            } else if (!ninRegex.test(recommenderNIN)) {
-                showError(recommenderNINInput, 'Recommender NIN must contain only numbers and capital letters');
-                isValid = false;
-            } else {
-                showSuccess(recommenderNINInput);
+            if (recommenderNINInput) {
+                if (recommenderNIN === '') {
+                    showError(recommenderNINInput, 'Recommender NIN is required for farmers');
+                    isValid = false;
+                } else if (recommenderNIN.length < 8) {
+                    showError(recommenderNINInput, 'Recommender NIN must be at least 8 characters');
+                    isValid = false;
+                } else if (!ninRegex.test(recommenderNIN)) {
+                    showError(recommenderNINInput, 'Recommender NIN must contain only numbers and capital letters');
+                    isValid = false;
+                } else {
+                    showSuccess(recommenderNINInput);
+                }
             }
 
             return isValid;
         } else {
             // Clear any existing errors if role is not farmer
-            removeError(ninInput);
-            removeError(recommenderNameInput);
-            removeError(recommenderNINInput);
+            if (ninInput) removeError(ninInput);
+            if (recommenderNameInput) removeError(recommenderNameInput);
+            if (recommenderNINInput) removeError(recommenderNINInput);
             return true;
         }
     }
 
     // Show/hide recommender fields based on role selection
     function toggleRecommenderFields() {
+        if (!roleSelect) return;
+        
         const roleValue = roleSelect.value;
-        const conditionalFields = [
-            ninInput.parentNode, 
-            recommenderNameInput.parentNode, 
-            recommenderNINInput.parentNode
-        ];
+        const conditionalFields = [];
+        
+        // Collect existing conditional field elements
+        if (ninInput && ninInput.parentNode) conditionalFields.push(ninInput.parentNode);
+        if (recommenderNameInput && recommenderNameInput.parentNode) conditionalFields.push(recommenderNameInput.parentNode);
+        if (recommenderNINInput && recommenderNINInput.parentNode) conditionalFields.push(recommenderNINInput.parentNode);
         
         if (roleValue === 'farmer') {
             conditionalFields.forEach(field => {
@@ -196,12 +239,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 field.style.display = 'none';
             });
             // Clear the fields and any errors when hidden
-            ninInput.value = '';
-            recommenderNameInput.value = '';
-            recommenderNINInput.value = '';
-            removeError(ninInput);
-            removeError(recommenderNameInput);
-            removeError(recommenderNINInput);
+            if (ninInput) {
+                ninInput.value = '';
+                removeError(ninInput);
+            }
+            if (recommenderNameInput) {
+                recommenderNameInput.value = '';
+                removeError(recommenderNameInput);
+            }
+            if (recommenderNINInput) {
+                recommenderNINInput.value = '';
+                removeError(recommenderNINInput);
+            }
         }
     }
 
@@ -214,17 +263,31 @@ document.addEventListener('DOMContentLoaded', function() {
         validateRole();
         toggleRecommenderFields();
     });
-    ninInput.addEventListener('blur', validateRecommenderFields);
-    recommenderNameInput.addEventListener('blur', validateRecommenderFields);
-    recommenderNINInput.addEventListener('blur', validateRecommenderFields);
+    
+    if (ninInput) {
+        ninInput.addEventListener('blur', validateRecommenderFields);
+    }
+    if (recommenderNameInput) {
+        recommenderNameInput.addEventListener('blur', validateRecommenderFields);
+    }
+    if (recommenderNINInput) {
+        recommenderNINInput.addEventListener('blur', validateRecommenderFields);
+    }
 
     // Clear errors on input
-    [nameInput, emailInput, passwordInput, phoneInput, ninInput, recommenderNameInput, recommenderNINInput].forEach(input => {
-        input.addEventListener('input', function() {
-            if (this.style.borderColor === 'rgb(220, 53, 69)') { // If there's an error
-                removeError(this);
-            }
-        });
+    const inputFields = [nameInput, emailInput, passwordInput, phoneInput];
+    if (ninInput) inputFields.push(ninInput);
+    if (recommenderNameInput) inputFields.push(recommenderNameInput);
+    if (recommenderNINInput) inputFields.push(recommenderNINInput);
+
+    inputFields.forEach(input => {
+        if (input) {
+            input.addEventListener('input', function() {
+                if (this.style.borderColor === 'rgb(220, 53, 69)') { // If there's an error
+                    removeError(this);
+                }
+            });
+        }
     });
 
     // Initialize recommender fields visibility
@@ -246,14 +309,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isFormValid) {
             e.preventDefault();
             
-            // Disable submit button temporarily to prevent spam
-            submitButton.disabled = true;
-            submitButton.textContent = 'Please fix errors above';
-            
-            setTimeout(() => {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Create Account';
-            }, 2000);
+            if (submitButton) {
+                // Disable submit button temporarily to prevent spam
+                submitButton.disabled = true;
+                submitButton.textContent = 'Please fix errors above';
+                
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Create Account';
+                }, 2000);
+            }
 
             // Focus on first invalid field
             const firstErrorField = form.querySelector('input[style*="rgb(220, 53, 69)"], select[style*="rgb(220, 53, 69)"]');
@@ -276,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const isFormValid = validations.every(validation => validation === true);
 
-        if (isFormValid) {
+        if (isFormValid && submitButton) {
             submitButton.disabled = true;
             submitButton.textContent = 'Creating Account...';
         }

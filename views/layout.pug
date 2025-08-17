@@ -42,9 +42,9 @@ html(lang="en")
               li.nav-item
                 a.nav-link(href="/products") Products
               li.nav-item
-                a.btn.btn-success.ms-3(href="/login") Login
+                a.nav-link(href="/login") Login
               li.nav-item
-                a.btn.btn-outline-primary.ms-2(href="/signup") Register
+                a.nav-link(href="/signup") Register
 
     //- Page content block - this is where the main content of child templates goes
     block content
@@ -61,7 +61,7 @@ html(lang="en")
           .modal-footer
             button.btn.btn-success(type='button', data-bs-dismiss='modal') OK
 
-    New block for page-specific modals (like your #addStockModal)
+    //- New block for page-specific modals (like your #addStockModal)
     block modals
 
     //- Bootstrap JS at end of body for performance
