@@ -1,0 +1,361 @@
+extends layout
+block content 
+    title Young4Chicks - Vaccination Management
+    link(rel="stylesheet", href="/Styles/vaccination.css")
+    .container
+      .header
+        h1 🐥 Young4Chicks Vaccination Center
+        p Comprehensive Poultry Health Management for Young Farmers
+        .header-actions
+          a.action-btn.contact-vet(href="/contact-vet") 
+            span.btn-icon 🩺
+            | Contact Vet
+          a.action-btn.order-vaccines(href="/order-vaccines") 
+            span.btn-icon 💉
+            | Order Vaccines
+          a.action-btn.logout(href="/logout") 
+            span.btn-icon 🚪
+            | LogOut
+      .nav-tabs
+        button.nav-tab.active(onclick="showTab('diseases')") Disease Library
+        button.nav-tab(onclick="showTab('schedule')") Vaccination Schedule
+        button.nav-tab(onclick="showTab('tracker')") Health Tracker
+        button.nav-tab(onclick="showTab('education')") Education Center
+
+      //-Disease Library Tab
+      #diseases.tab-content.active
+        input.search-box(type="text", placeholder="Search diseases...", id="diseaseSearch", onkeyup="searchDiseases()")
+        
+        .disease-grid#diseaseGrid
+          .disease-card(data-disease="newcastle")
+            .disease-title
+              | Newcastle Disease
+              span.severity-badge.severity-high High Risk
+            p.disease-description
+              | A highly contagious viral disease affecting the respiratory, nervous, and digestive systems of chickens. Can cause up to 100% mortality in unvaccinated flocks.
+            .symptoms-list
+              .symptoms-title 🔍 Key Symptoms:
+              ul
+                li Respiratory distress and gasping
+                li Twisted neck and head (torticollis)
+                li Green diarrhea
+                li Sudden death
+                li Drop in egg production
+            .vaccination-schedule
+              .symptoms-title 💉 Vaccination Schedule:
+              p
+                strong Day 7-10:
+                |  First vaccination (B1 strain)
+                br
+                strong Day 21-28:
+                |  Booster (LaSota strain)
+                br
+                strong Every 3 months:
+                |  Adult boosters
+            .prevention-tips
+              .symptoms-title 🛡️ Prevention Tips:
+              p Maintain biosecurity, vaccinate on schedule, quarantine new birds, and ensure proper ventilation.
+
+          .disease-card(data-disease="fowlpox")
+            .disease-title
+              | Fowl Pox
+              span.severity-badge.severity-medium Medium Risk
+            p.disease-description
+              | A viral infection causing skin lesions and affecting the respiratory system. Spreads through mosquitoes and direct contact.
+            .symptoms-list
+              .symptoms-title 🔍 Key Symptoms:
+              ul
+                li Warty growths on comb and wattles
+                li White patches in mouth and throat
+                li Difficulty breathing
+                li Reduced feed intake
+                li Lower egg production
+            .vaccination-schedule
+              .symptoms-title 💉 Vaccination Schedule:
+              p
+                strong Week 8-12:
+                |  Wing web vaccination
+                br
+                strong Annual:
+                |  Booster shots for layers
+                br
+                strong Before laying:
+                |  Pre-lay vaccination
+            .prevention-tips
+              .symptoms-title 🛡️ Prevention Tips:
+              p Control mosquitoes, maintain clean water, vaccinate on schedule, and isolate affected birds immediately.
+
+          .disease-card(data-disease="gumboro")
+            .disease-title
+              | Gumboro Disease (IBD)
+              span.severity-badge.severity-high High Risk
+            p.disease-description
+              | Infectious Bursal Disease affects young chickens' immune system, making them susceptible to other infections and reducing vaccine effectiveness.
+            .symptoms-list
+              .symptoms-title 🔍 Key Symptoms:
+              ul
+                li Sudden onset diarrhea
+                li Dehydration and weakness
+                li Ruffled feathers
+                li Vent pecking
+                li High mortality (3-6 weeks old)
+            .vaccination-schedule
+              .symptoms-title 💉 Vaccination Schedule:
+              p
+                strong Day 14-21:
+                |  First IBD vaccination
+                br
+                strong Day 28-35:
+                |  Second vaccination
+                br
+                strong Maternal antibodies:
+                |  Consider testing
+            .prevention-tips
+              .symptoms-title 🛡️ Prevention Tips:
+              p Follow strict vaccination schedule, maintain clean environment, test maternal antibodies, and practice biosecurity.
+
+          .disease-card(data-disease="coccidiosis")
+            .disease-title
+              | Coccidiosis
+              span.severity-badge.severity-medium Medium Risk
+            p.disease-description
+              | A parasitic disease affecting the intestinal tract, common in young birds kept in crowded, unsanitary conditions.
+            .symptoms-list
+              .symptoms-title 🔍 Key Symptoms:
+              ul
+                li Bloody diarrhea
+                li Weight loss and poor growth
+                li Ruffled feathers
+                li Weakness and depression
+                li Pale comb and wattles
+            .vaccination-schedule
+              .symptoms-title 💉 Prevention Schedule:
+              p
+                strong Day 1:
+                |  Coccidiosis vaccine spray
+                br
+                strong Alternative:
+                |  Medicated feed for 6 weeks
+                br
+                strong Ongoing:
+                |  Coccidiostat in feed
+            .prevention-tips
+              .symptoms-title 🛡️ Prevention Tips:
+              p Keep litter dry, avoid overcrowding, use medicated feed, maintain good ventilation, and practice rotation.
+
+          .disease-card(data-disease="marek")
+            .disease-title
+              | Marek's Disease
+              span.severity-badge.severity-high High Risk
+            p.disease-description
+              | A viral disease causing tumors and paralysis in chickens. Highly contagious and can cause significant economic losses.
+            .symptoms-list
+              .symptoms-title 🔍 Key Symptoms:
+              ul
+                li Paralysis of legs and wings
+                li Twisted neck
+                li Gray iris or irregular pupil
+                li Tumors in organs
+                li Gradual weight loss
+            .vaccination-schedule
+              .symptoms-title 💉 Vaccination Schedule:
+              p
+                strong Day 1:
+                |  At hatchery (HVT vaccine)
+                br
+                strong Critical:
+                |  Must be done before exposure
+                br
+                strong Lifetime:
+                |  Single vaccination provides lifelong immunity
+            .prevention-tips
+              .symptoms-title 🛡️ Prevention Tips:
+              p Vaccinate at day 1, maintain biosecurity, avoid mixing age groups, and ensure good ventilation.
+
+          .disease-card(data-disease="bronchitis")
+            .disease-title
+              | Infectious Bronchitis
+              span.severity-badge.severity-medium Medium Risk
+            p.disease-description
+              | A respiratory disease that can also affect egg quality and production in laying hens. Highly contagious among chickens.
+            .symptoms-list
+              .symptoms-title 🔍 Key Symptoms:
+              ul
+                li Gasping and coughing
+                li Nasal discharge
+                li Decreased egg production
+                li Soft-shelled eggs
+                li Poor feed conversion
+            .vaccination-schedule
+              .symptoms-title 💉 Vaccination Schedule:
+              p
+                strong Day 1:
+                |  Spray vaccination
+                br
+                strong Day 14-21:
+                |  Booster dose
+                br
+                strong 16-18 weeks:
+                |  Pre-lay vaccination
+            .prevention-tips
+              .symptoms-title 🛡️ Prevention Tips:
+              p Maintain proper ventilation, avoid temperature stress, vaccinate regularly, and quarantine new birds.
+
+      //-Vaccination Schedule Tab
+      #schedule.tab-content
+        .schedule-form
+          h2(style="margin-bottom: 20px; color: #2c3e50;") 🗓️ Create Vaccination Schedule
+          .form-grid
+            .form-group
+              label.form-label Farmer Name
+              input.form-control(type="text", id="farmerName", placeholder="Enter farmer name")
+            .form-group
+              label.form-label Flock Size
+              input.form-control(type="number", id="flockSize", placeholder="Number of chicks")
+            .form-group
+              label.form-label Hatch Date
+              input.form-control(type="date", id="hatchDate")
+            .form-group
+              label.form-label Chicken Type
+              select.form-control#chickenType
+                option(value="") Select type
+                option(value="broiler") Broiler
+                option(value="layer") Layer
+          button.btn(onclick="generateSchedule()") Generate Schedule
+
+        #generatedSchedule
+
+      //-Health Tracker Tab
+      #tracker.tab-content
+        .education-section
+          h2(style="margin-bottom: 20px; color: #2c3e50;") 📊 Flock Health Tracker
+          .tracker-form
+            h3 Add Health Record
+            .form-grid
+              .form-group
+                label.form-label Date
+                input.form-control(type="date", id="recordDate")
+              .form-group
+                label.form-label Vaccination Given
+                input.form-control(type="text", id="vaccinationType", placeholder="e.g., Newcastle B1")
+              .form-group
+                label.form-label Current Flock Size
+                input.form-control(type="number", id="currentFlockSize", placeholder="Number of birds")
+              .form-group
+                label.form-label Mortality Count
+                input.form-control(type="number", id="mortalityCount", placeholder="Deaths since last record")
+              .form-group
+                label.form-label Notes
+                textarea.form-control(id="healthNotes", placeholder="Any observations or notes", rows="2")
+            button.btn(onclick="addHealthRecord()") Add Record
+
+          table.schedule-table
+            thead
+              tr
+                th Date
+                th Vaccination
+                th Flock Size
+                th Mortality
+                th Status
+                th Notes
+                th Action
+            tbody#healthRecords
+              tr
+                td 2025-08-01
+                td Newcastle (B1)
+                td 95
+                td 5
+                td
+                  span.status-badge.status-completed Completed
+                td Good response, no adverse reactions
+                td
+                  button.btn-small(onclick="editRecord(this)") Edit
+              tr
+                td 2025-08-15
+                td IBD
+                td 92
+                td 3
+                td
+                  span.status-badge.status-completed Completed
+                td Normal mortality rate
+                td
+                  button.btn-small(onclick="editRecord(this)") Edit
+              tr
+                td 2025-08-22
+                td Newcastle Booster
+                td 89
+                td 0
+                td
+                  span.status-badge.status-pending Pending
+                td Scheduled for next week
+                td
+                  button.btn-small(onclick="editRecord(this)") Edit
+
+      //-Education Center Tab
+      #education.tab-content
+        .education-section
+          h2(style="margin-bottom: 30px; color: #2c3e50;") 🎓 Poultry Health Education Center
+          
+          .tip-card
+            .tip-title 🏠 Biosecurity Best Practices
+            p Establish controlled entry points, disinfect footwear, limit visitor access, maintain separate equipment for each flock, and implement an all-in-all-out policy when possible. These measures prevent disease introduction and spread.
+
+          .tip-card
+            .tip-title 💉 Vaccination Success Factors
+            p Store vaccines properly (2-8°C), check expiration dates, use clean equipment, follow manufacturer's instructions, maintain cold chain during transport, and record all vaccinations with dates and batch numbers.
+
+          .tip-card
+            .tip-title 🌡️ Environmental Management
+            p Maintain optimal temperature (20-24°C for adult birds), ensure proper ventilation without drafts, keep humidity at 50-70%, provide adequate space (4-5 birds per m²), and maintain clean, dry litter.
+
+          .tip-card
+            .tip-title 🍽️ Nutrition for Immunity
+            p Provide balanced feed with essential vitamins (A, C, E), minerals (selenium, zinc), and probiotics. Fresh, clean water should be available 24/7. Consider feed additives that boost immunity during stress periods.
+
+          .tip-card
+            .tip-title 👁️ Early Disease Detection
+            p Conduct daily health checks, monitor feed and water consumption, observe behavior changes, check for unusual discharge or breathing patterns, and maintain mortality records. Early detection saves lives and money.
+
+          .tip-card
+            .tip-title 📞 Emergency Response
+            p Know your local veterinarian's contact, keep emergency medications on hand, isolate sick birds immediately, document symptoms with photos if possible, and report unusual mortality to authorities promptly.
+
+          .tip-card
+            .tip-title 💰 Economic Benefits of Vaccination
+            p Prevention costs are always lower than treatment. Vaccination programs typically show 5:1 ROI through reduced mortality, better growth rates, improved feed conversion, and higher egg production in layers.
+
+          .tip-card
+            .tip-title 🔬 Understanding Vaccine Types
+            p Live vaccines provide strong immunity but require careful handling. Inactivated vaccines are safer but may need boosters. Choose the right vaccine type based on your flock's age, health status, and disease pressure in your area.
+
+      .quick-actions
+        .actions-grid
+          .action-card
+            a(href="/contact-vet")
+              .action-icon 🩺
+              .action-title Contact Veterinarian
+              .action-desc Get professional advice and emergency support
+              button.btn-secondary Contact Now
+          
+          .action-card
+            a(href="/order-vaccines")
+              .action-icon 💉
+              .action-title Order Vaccines
+              .action-desc Browse and order vaccines for your flock
+              button.btn-secondary Order Now
+          
+          .action-card
+            a(href="/reminders")
+              .action-icon 🔔
+              .action-title View Reminders
+              .action-desc Check upcoming vaccination schedules
+              button.btn-secondary View Reminders
+          
+          .action-card
+            a(href="/export-data")
+              .action-icon 📊
+              .action-title Export Data
+              .action-desc Download your health records and schedules
+              button.btn-secondary Export Data
+
+    script(src="/vanilla-js/vaccination.js")

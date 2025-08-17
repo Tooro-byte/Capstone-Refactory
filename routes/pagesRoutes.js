@@ -16,6 +16,9 @@ router.get("/contact", (req, res)=>{
     res.render("contact")
 })
 
+router.get("/vaccines", (req, res)=>{
+    res.render("vaccination")
+})
 
 
 

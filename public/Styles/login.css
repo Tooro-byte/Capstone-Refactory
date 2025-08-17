@@ -29,12 +29,19 @@
   padding: 0;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   color: var(--dark-color);
   background: var(--light-color);
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 /* Navbar Styles */
@@ -149,8 +156,8 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.6; /* Increased for better visibility */
-  filter: contrast(1.1); /* Enhance sharpness */
+  opacity: 0.6;
+  filter: contrast(1.1);
 }
 
 .background-overlay {
@@ -160,7 +167,7 @@ body {
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, 
-    rgba(37, 99, 235, 0.02) 0%, /* Reduced opacity for clearer background */
+    rgba(37, 99, 235, 0.02) 0%,
     rgba(16, 185, 129, 0.01) 50%, 
     rgba(245, 158, 11, 0.02) 100%);
 }
@@ -169,10 +176,10 @@ body {
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(20px); /* Reduced blur for less interference */
+  filter: blur(20px);
   mix-blend-mode: multiply;
   animation: blob 7s infinite;
-  opacity: 0.5; /* Reduced opacity */
+  opacity: 0.5;
 }
 
 .blob-1 {
@@ -209,30 +216,88 @@ body {
   100% { transform: translate(0px, 0px) scale(1); }
 }
 
-/* Main Login Content */
+/* Main Login Content - UPDATED FOR PERFECT CENTERING */
 .login-main {
   min-height: 100vh;
-  padding: 2rem 0;
+  padding: 0;
   position: relative;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-main .container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  margin: 0 auto;
+}
+
+.login-main .row {
+  margin: 0;
+  height: 100vh;
 }
 
 .min-vh-100 {
   min-height: 100vh !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Login Card */
+.justify-content-center {
+  justify-content: center !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+/* Bootstrap-like Grid System for Centering */
+.col-12, .col-md-6, .col-lg-5, .col-xl-4 {
+  width: 100%;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .col-md-6 {
+    width: 50%;
+    max-width: 700px;
+  }
+}
+
+@media (min-width: 992px) {
+  .col-lg-5 {
+    width: 41.666667%;
+    max-width: 650px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .col-xl-4 {
+    width: 33.333333%;
+    max-width: 600px;
+  }
+}
+
+/* Login Card - ENHANCED CENTERING */
 .login-card {
-  background: rgba(255, 255, 255, 1); /* Fully opaque for better contrast */
-  backdrop-filter: blur(10px); /* Slightly reduced blur */
+  background: rgba(255, 255, 255, 1);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--border-radius-lg);
   padding: 3rem;
   box-shadow: var(--shadow-xl);
   transition: var(--transition);
-  max-width: 600px;
   width: 100%;
-  margin: 0 auto;
+  max-width: 650px;
+  margin: auto;
+  position: relative;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .login-card:hover {
@@ -253,16 +318,43 @@ body {
 
 /* Login Header */
 .login-header .user-icon {
-  width: 4rem;
-  height: 4rem;
+  width: 5rem;
+  height: 5rem;
   background: linear-gradient(135deg, var(--primary-color), var(--success-color));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--white);
-  font-size: 2rem;
+  font-size: 2.5rem;
   box-shadow: var(--shadow-lg);
+  margin-bottom: 1.5rem;
+}
+
+/* Text Center Utility */
+.text-center {
+  text-align: center !important;
+}
+
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.mb-2, .mb-3, .mb-4 {
+  margin-bottom: 1rem !important;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
 }
 
 /* Login Title and Subtitle */
@@ -289,6 +381,7 @@ body {
   color: var(--dark-color);
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+  display: block;
 }
 
 .input-wrapper {
@@ -356,6 +449,23 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.d-flex {
+  display: flex !important;
+}
+
+.justify-content-between {
+  justify-content: space-between !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+}
+
 .custom-checkbox {
   width: 1.25rem;
   height: 1.25rem;
@@ -401,6 +511,11 @@ body {
   box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.w-100 {
+  width: 100% !important;
 }
 
 .login-btn:hover {
@@ -472,6 +587,7 @@ body {
   font-weight: 500;
   transition: var(--transition);
   font-size: 0.9rem;
+  width: 100%;
 }
 
 .social-btn:hover {
@@ -484,6 +600,10 @@ body {
 .social-icon {
   width: 20px;
   height: 20px;
+}
+
+.me-2 {
+  margin-right: 0.5rem !important;
 }
 
 /* Sign Up Link */
@@ -505,19 +625,27 @@ body {
   text-decoration: underline;
 }
 
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
 /* Landscape-Optimized Responsive Design */
 @media (min-aspect-ratio: 4/3) {
-  .container {
+  .login-main .container {
     max-width: 1400px;
   }
 
   .background-container::before {
-    opacity: 0.65; /* Slightly higher for landscape visibility */
+    opacity: 0.65;
   }
 
   .login-card {
     max-width: 700px;
-    padding: 3.5rem;
+    padding: 3.5rem 4rem;
   }
 
   .login-title {
@@ -549,6 +677,12 @@ body {
   .social-btn {
     padding: 1rem;
     font-size: 1rem;
+  }
+
+  .login-header .user-icon {
+    width: 5.5rem;
+    height: 5.5rem;
+    font-size: 2.75rem;
   }
 
   .blob-1 {
@@ -602,7 +736,8 @@ body {
 
   .login-card {
     padding: 2.5rem 2rem;
-    max-width: 500px;
+    max-width: 550px;
+    margin: 2rem auto;
   }
 
   .login-title {
@@ -620,7 +755,11 @@ body {
   }
 
   .login-main {
-    padding: 1.5rem 0;
+    padding: 1rem 0;
+  }
+
+  .login-main .container {
+    padding: 1rem;
   }
 }
 
@@ -637,12 +776,13 @@ body {
   .login-card {
     padding: 2rem 1.5rem;
     max-width: 90%;
+    margin: 1rem auto;
   }
 
   .login-header .user-icon {
-    width: 3.5rem;
-    height: 3.5rem;
-    font-size: 1.75rem;
+    width: 4rem;
+    height: 4rem;
+    font-size: 2rem;
   }
 
   .login-title {
@@ -668,6 +808,10 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .login-main .container {
+    padding: 0.5rem;
   }
 }
 
