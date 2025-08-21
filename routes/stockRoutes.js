@@ -25,7 +25,7 @@ router.post("/addchicks", async (req, res) => {
 // Get a list of Chicks Added Per Day By Young For Chicks Stock Managers
 router.get("/chickslist", async (req, res) => {
   try {
-    let chicks = await displayChickStock.find().sort({ $natural: -1 }); //.limit(number of people returned from db)
+    let chicks = await displayChickStock.find().sort({ $natural: -1 }); //.limit(number of chick returned from db)
     res.render("addChicksLists", { chicks });
   } catch (error) {
     res
@@ -35,6 +35,7 @@ router.get("/chickslist", async (req, res) => {
 });
 
 // Updating and Deleting Chick Stock
+//Upadate Route.
 router.get("/updatechick/:id", async (req, res) => {
   try {
     const chickId = req.params.id;

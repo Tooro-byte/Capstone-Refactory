@@ -26,8 +26,6 @@ const salesRepRoute = require('./routes/salesRepoRoutes');
 const pageRoutes = require("./routes/pagesRoutes");
 const feedRequests = require("./routes/feedsRequest");
 
-
-
 const{error} = console;
 // 2: Young for Chicks Instantiations
 const app = express();
@@ -88,7 +86,7 @@ app.use((req, res) => {
 });
 
 //6: Bootstrapping the Server
-//Always put this line of code at the enf of the index.js file.
+//Always put this line of code at the end of the index.js file.
 app.listen(port, () => {
-  console.log(`Young For Chicks Server has started running on Port ${port}`);
-});
+  console.log(`Young4Chicks Server has started running on Port ${port}`);
+})

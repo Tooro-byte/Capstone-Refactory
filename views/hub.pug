@@ -1,0 +1,193 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Young4Chicks - Program Guide
+    meta(name="description", content="Detailed guide to the Young4ChickS urban brooding initiative, including eligibility, application process, and chick types.")
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="stylesheet", href="/Styles/hub.css")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet")
+    link(rel="stylesheet", href="program.css")
+    //- Lucide Icons CDN
+    script(src="https://unpkg.com/lucide@latest/dist/umd/lucide.js")
+    
+  body
+    .app
+      //- Header 
+      header.header
+        .header-container
+          .header-left
+            .logo
+              .logo-icon
+                i(data-lucide="egg")
+              .logo-text
+                h1 Young4Chicks 
+                p Education Hub
+          nav.nav-desktop
+            a.nav-btn(href="#") Overview
+            a.nav-btn(href="#") Learning Modules
+            a.nav-btn.active(href="#") Program Guide
+
+      //- Hero Section
+      section.hero
+        .hero-container
+          .hero-content
+            h1.hero-title
+              | Master Poultry Farming for 
+              span.hero-highlight Wealth Creation
+            p.hero-description
+              | Empowering young urban dwellers (18-30) to build sustainable poultry enterprises. 
+              | Learn from experts, access quality chicks, and join Uganda's agricultural revolution.
+          .hero-actions
+            //- The 'a' tag is used instead of a button for routing
+            a.btn.btn-primary(href="/learning-modules")
+              | Start Learning 
+              i.btn-icon(data-lucide="arrow-right")
+            a.btn.btn-secondary(href="/programs")
+              | Program Details 
+              i.btn-icon(data-lucide="chevron-right")
+          
+      //- Stats Section
+      section.stats
+        .stats-container
+          .stats-grid
+            .stat-item
+              .stat-icon
+                i(data-lucide="users")
+              .stat-value 2,400+
+              .stat-label Young Farmers Trained
+            .stat-item
+              .stat-icon
+                i(data-lucide="egg")
+              .stat-value 180K+
+              .stat-label Chicks Distributed
+            .stat-item
+              .stat-icon
+                i(data-lucide="trending-up")
+              .stat-value 87%
+              .stat-label Success Rate
+            .stat-item
+              .stat-icon
+                i(data-lucide="dollar-sign")
+              .stat-value 340%
+              .stat-label Average ROI
+              
+      //- Main Content
+      main.main-content
+        .tab-content.active
+          //- Eligibility Process
+          section.section
+            h2.section-title Eligibility & Application Process
+            .eligibility-steps
+              .step-item
+                .step-number 1
+                .step-content
+                  .step-header
+                    i(data-lucide="users")
+                    h3 Age Requirement
+                  p Must be between 18-30 years old
+              .step-item
+                .step-number 2
+                .step-content
+                  .step-header
+                    i(data-lucide="shield")
+                    h3 Registration
+                  p Register with recommender's NIN number
+              .step-item
+                .step-number 3
+                .step-content
+                  .step-header
+                    i(data-lucide="check-circle")
+                    h3 Request Submission
+                  p Submit chick request form every 4 months
+              .step-item
+                .step-number 4
+                .step-content
+                  .step-header
+                    i(data-lucide="award")
+                    h3 Approval Process
+                  p Wait for brooder manager approval
+
+          //- Chick Types Comparison
+          section.section
+            h2.section-title Chick Types & Pricing
+            .chick-types-grid
+              .chick-type-card.layers
+                .chick-type-icon
+                  i(data-lucide="egg")
+                h3 Layers (Egg Production)
+                p Perfect for consistent egg production. Ideal for beginners looking for steady income.
+                .pricing-details
+                  .pricing-row
+                    span Local Breeds
+                    span UGx 1,650
+                  .pricing-row
+                    span Exotic Breeds
+                    span UGx 1,650
+                  .roi-info Expected ROI: 250-300%
+              .chick-type-card.broilers
+                .chick-type-icon
+                  i(data-lucide="trending-up")
+                h3 Broilers (Meat Production)
+                p Fast-growing chickens for meat production. Quick returns on investment.
+                .pricing-details
+                  .pricing-row
+                    span Local Breeds
+                    span UGx 1,650
+                  .pricing-row
+                    span Exotic Breeds
+                    span UGx 1,650
+                  .roi-info Expected ROI: 300-400%
+                  
+          //- Contact Information
+          section.contact-section
+            .contact-header
+              h2 Ready to Get Started?
+              p Contact our sales representatives to begin your poultry farming journey
+            .contact-grid
+              .contact-item
+                i(data-lucide="phone")
+                h3 Call Us
+                p Our sales reps are ready to take your order
+              .contact-item
+                i(data-lucide="check-circle")
+                h3 Submit Request
+                p Fill out the online request form
+              .contact-item
+                i(data-lucide="award")
+                h3 Get Approved
+                p Manager approval within 24-48 hours
+
+      //- Footer
+      footer.footer
+        .footer-container
+          .footer-grid
+            .footer-section
+              .footer-logo
+                .logo-icon
+                  i(data-lucide="egg")
+                h3 Young4ChickS
+              p Empowering young Ugandans through sustainable poultry farming and wealth creation.
+            .footer-section
+              h4 Quick Links
+              ul.footer-links
+                li
+                  a.footer-link(href="#") About Us
+                li
+                  a.footer-link(href="#") Learning Modules
+                li
+                  a.footer-link.active(href="#") Program Guide
+            .footer-section
+              h4 Contact Info
+              .footer-contact
+                p Founded by Youth MP
+                p Serving Urban Youth 18-30
+                p Uganda, East Africa
+          .footer-bottom
+            p &copy; 2025 Young4ChickS. Empowering the next generation of farmers.
+
+    script.
+      // Initialize Lucide icons
+      lucide.createIcons();

@@ -219,7 +219,7 @@ router.post('/feedsReq', ensureAuthenticated, ensureFarmer, async (req, res) => 
     });
 
     // Redirect to success page or dashboard
-    res.redirect('/dashboard');
+    res.redirect('/farmerDashBoard');
 
   } catch (error) {
     console.error('Error processing feeds request:', error);

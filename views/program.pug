@@ -1,0 +1,98 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Young4Chicks | Monthly Farmer Education Guide
+    link(rel="stylesheet", href="program.css")
+  body
+    .container
+      header
+        h1 Young4ChickS: Farmer Education Guide
+        p Upgrade your poultry skills every month. Select one course aligned with your farming goals.
+
+      section.user-profile
+        h2 Farmer Profile
+        form#profileForm
+          label(for="name") Full Name
+          input(type="text", id="name", name="name", required)
+
+          label(for="youthNIN") Youth NIN
+          input(type="text", id="youthNIN", name="youthNIN", required)
+
+          label(for="farmerType") Type of Farmer
+          select(id="farmerType", name="farmerType", required)
+            option(value="starter") Starter Farmer
+            option(value="returning") Returning Farmer
+
+      section.programs
+        h2 📅 August 2025 Course Calendar
+        p Below are official training programs for this month. Enroll in **one** program only.
+
+        each course in [
+          {
+            id: "broilerFundamentals",
+            title: "Broiler Farming Fundamentals",
+            level: "Beginner",
+            duration: "3 Days (Aug 25–27)",
+            format: "In-person (District Training Hall)",
+            objectives: [
+              "Brooder setup & lighting",
+              "Feeding cycles for fast growth",
+              "Daily monitoring & hygiene",
+              "Understanding feed-to-weight ratios"
+            ],
+            for: "Starter Farmers",
+            outcome: "Starter Certificate, priority chick allocation"
+          },
+          {
+            id: "layerProfitBoost",
+            title: "Layer Farming Profit Boost",
+            level: "Intermediate",
+            duration: "2 Days (Aug 28–29)",
+            format: "Online (Zoom + Materials)",
+            objectives: [
+              "Optimizing egg production",
+              "Cost reduction in feed",
+              "Layer housing setup",
+              "Layer vaccination calendar"
+            ],
+            for: "Returning Farmers",
+            outcome: "Advanced Layer Certificate, access to 500 chicks"
+          },
+          {
+            id: "exoticCare",
+            title: "Exotic Chick Handling & Care",
+            level: "Advanced",
+            duration: "4 Days (Aug 20–23)",
+            format: "Hybrid (2 days online, 2 days farm visit)",
+            objectives: [
+              "Breed selection for urban farms",
+              "Managing stress in exotic breeds",
+              "Tailored vaccination programs",
+              "Feeding schedules for exotics"
+            ],
+            for: "Returning Farmers",
+            outcome: "Exotic Farmer Badge, mentorship access"
+          }
+        ]
+          .course-block
+            h3 #{course.title} (#{course.level})
+            p Duration: #{course.duration} | Format: #{course.format}
+            p Target: #{course.for}
+            ul
+              each obj in course.objectives
+                li #{obj}
+            p Outcome: #{course.outcome}
+            label
+              input(type="radio", name="selectedCourse", value=course.id)
+              |  Enroll in this course
+
+        button(type="submit", form="profileForm") Submit Enrollment
+
+      section.support
+        h2 Need Help?
+        p Contact your sales rep or call 0800-CHICKS for help with enrollment.
+
+      footer
+        p &copy; 2025 Young4ChickS | Powered by Youth Parliament of Uganda

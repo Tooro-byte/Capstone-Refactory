@@ -20,6 +20,13 @@ router.get("/vaccines", (req, res)=>{
     res.render("vaccination")
 })
 
+router.get("/educHub", (req, res)=>{
+    res.render("hub")
+})
+
+router.get("/programs", (req, res)=>{
+    res.render("program")
+})
 
 
 
