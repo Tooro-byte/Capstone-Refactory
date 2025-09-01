@@ -24,7 +24,6 @@ const userSchema = new mongoose.Schema({
     required: function () {
       return this.role === "farmer";
     },
-    unique: true,
     trim: true,
   },
   role: {
@@ -47,6 +46,17 @@ const userSchema = new mongoose.Schema({
     default: null,
   },
 });
+
+// Create a unique index on 'nin' with a partial filter.
+// This ensures uniqueness is only enforced for documents
+// where the 'nin' field exists and is not an empty string.
+userSchema.index(
+  { nin: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { nin: { $exists: true, $ne: null, $ne: "" } },
+  }
+);
 
 userSchema.plugin(passportLocalMongoose, {
   usernameField: "email",

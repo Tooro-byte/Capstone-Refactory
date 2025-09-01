@@ -4,7 +4,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 const passport = require("passport");
 const moment = require("moment");
-const flash = require('connect-flash');
+const flash = require("connect-flash");
 const expressSession = require("express-session")({
   secret: "Tooro-byte",
   resave: false,
@@ -18,15 +18,15 @@ const User = require("./models/User");
 //1b: Importing Different Routes
 const indexRoute = require("./routes/indexRoute");
 const signupRoute = require("./routes/authRoutes");
-const chicksRoute = require("./routes/chicksRoutes")
+const chicksRoute = require("./routes/chicksRoutes");
 const farmersRoute = require("./routes/farmersRoutes");
 const managerRoute = require("./routes/managersRoutes");
-const stockRoutes = require('./routes/stockRoutes');
-const salesRepRoute = require('./routes/salesRepoRoutes');
+const stockRoutes = require("./routes/stockRoutes");
+const salesRepRoute = require("./routes/salesRepoRoutes");
 const pageRoutes = require("./routes/pagesRoutes");
 const feedRequests = require("./routes/feedsRequest");
 
-const{error} = console;
+const { error } = console;
 // 2: Young for Chicks Instantiations
 const app = express();
 const port = 3003;
@@ -45,7 +45,8 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
 //4a: Middleware
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 //Express Session Configurations
@@ -58,9 +59,9 @@ app.use(flash());
 
 // Make flash messages available to all templates (optional but good practice)
 app.use((req, res, next) => {
-  res.locals.success_msg = req.flash('success');
-  res.locals.error_msg = req.flash('error');
-  res.locals.error = req.flash('error'); // Common for passport, etc.
+  res.locals.success_msg = req.flash("success");
+  res.locals.error_msg = req.flash("error");
+  res.locals.error = req.flash("error"); // Common for passport, etc.
   next();
 });
 
@@ -72,10 +73,10 @@ passport.deserializeUser(User.deserializeUser());
 //4b: Using Imported routes from the routes folder
 app.use("/", indexRoute);
 app.use("/", signupRoute);
-app.use('/', chicksRoute);
-app.use('/', farmersRoute);
-app.use('/', managerRoute);
-app.use('/', stockRoutes);
+app.use("/", chicksRoute);
+app.use("/", farmersRoute);
+app.use("/", managerRoute);
+app.use("/", stockRoutes);
 app.use("/", salesRepRoute);
 app.use("/", pageRoutes);
 app.use("/", feedRequests);
@@ -89,4 +90,4 @@ app.use((req, res) => {
 //Always put this line of code at the end of the index.js file.
 app.listen(port, () => {
   console.log(`Young4Chicks Server has started running on Port ${port}`);
-})
+});

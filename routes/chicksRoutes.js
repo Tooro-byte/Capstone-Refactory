@@ -11,12 +11,12 @@ const chickRequest = require("../models/chickRequestModel");
 router.get(
   "/chickRequest",
   ensureAuthenticated, // Ensure user is logged in
-  ensureFarmer,        // Ensure user has 'farmer' role
+  ensureFarmer, // Ensure user has 'farmer' role
   async (req, res) => {
     try {
       // Find all chick requests associated with the currently logged-in user
       // Using req.user._id as populated by Passport
-      const requests = await chickRequest.find({user: req.user._id});
+      const requests = await chickRequest.find({ user: req.user._id });
 
       // Determine if the farmer is a 'starter' based on whether they have existing requests
       const isStarter = requests.length === 0;
@@ -28,7 +28,7 @@ router.get(
       res.render("chickRequest", {
         isStarter: isStarter,
         errorMessage: null, // Initialize error message as null for initial load
-        formData: {}        // Initialize empty form data for initial load
+        formData: {}, // Initialize empty form data for initial load
       });
     } catch (error) {
       console.error("Error fetching chick requests:", error.message);
@@ -42,7 +42,7 @@ router.get(
 router.post(
   "/chickRequest",
   ensureAuthenticated, // Ensure user is logged in
-  ensureFarmer,        // Ensure user has 'farmer' role
+  ensureFarmer, // Ensure user has 'farmer' role
   async (req, res) => {
     try {
       const {
@@ -65,11 +65,21 @@ router.post(
 
       // Additional validation based on farmer type
       const numChicksInt = parseInt(numChicks);
-      if (farmerType === 'starter' && (numChicksInt < 1 || numChicksInt > 100)) {
-        throw new Error("Starter farmers can request between 1 and 100 chicks.");
+      if (
+        farmerType === "starter" &&
+        (numChicksInt < 1 || numChicksInt > 100)
+      ) {
+        throw new Error(
+          "Starter farmers can request between 1 and 100 chicks."
+        );
       }
-      if (farmerType === 'returning' && (numChicksInt < 300 || numChicksInt > 500)) {
-        throw new Error("Returning farmers can request between 300 and 500 chicks.");
+      if (
+        farmerType === "returning" &&
+        (numChicksInt < 300 || numChicksInt > 500)
+      ) {
+        throw new Error(
+          "Returning farmers can request between 300 and 500 chicks."
+        );
       }
 
       // Create a new chick request instance with the data
@@ -78,30 +88,39 @@ router.post(
         chickType,
         numChicks: numChicksInt, // Ensure number fields are parsed
         unitPrice: parseFloat(unitPrice) || 1650, // Default to 1650 if not provided
-        totalCost: parseFloat(totalCost) || (numChicksInt * (parseFloat(unitPrice) || 1650)), // Calculate if not provided
+        totalCost:
+          parseFloat(totalCost) ||
+          numChicksInt * (parseFloat(unitPrice) || 1650), // Calculate if not provided
         requestDate: new Date(requestDate), // Ensure proper date format
-        comments: comments || '', // Default to empty string if not provided
+        comments: comments || "", // Default to empty string if not provided
         user: userId, // Link the request to the user
-        status: "Pending" // Set an initial status for the request
+        status: "Pending", // Set an initial status for the request
       });
 
       // Save the new request to the database
       await newRequest.save();
 
+      // async function getChickRequest() {
+      //   await newRequest.find.populate("user", "name");
+      // }
+      // getChickRequest();
+
       console.log("Chick Request Successfully Submitted:", newRequest);
 
       // Redirect to the farmer dashboard upon successful submission
       res.redirect("/farmerDashBoard?status=requestSubmitted");
-
     } catch (error) {
       console.error("Error submitting chick request:", error);
 
       // If there's a validation error from Mongoose or other issues,
       // re-render the form with an error message and the user's input
-      let errorMessage = "Error submitting your request. Please check your inputs.";
-      if (error.name === 'ValidationError') {
+      let errorMessage =
+        "Error submitting your request. Please check your inputs.";
+      if (error.name === "ValidationError") {
         // Mongoose validation error
-        errorMessage = Object.values(error.errors).map(err => err.message).join('<br>');
+        errorMessage = Object.values(error.errors)
+          .map((err) => err.message)
+          .join("<br>");
       } else {
         errorMessage = error.message || "An unexpected error occurred.";
       }
@@ -110,14 +129,14 @@ router.post(
         // Re-rendering the chickRequest form, passing the error and previous form data
         // To allow the user to correct mistakes without re-entering everything
         const requests = await chickRequest.find({
-            user: req.user._id,
+          user: req.user._id,
         });
         const isStarter = requests.length === 0;
 
         res.status(400).render("chickRequest", {
           isStarter: isStarter,
           errorMessage: errorMessage,
-          formData: req.body // Pass back the submitted data to pre-fill the form
+          formData: req.body, // Pass back the submitted data to pre-fill the form
         });
       } catch (renderError) {
         console.error("Error re-rendering form:", renderError);
